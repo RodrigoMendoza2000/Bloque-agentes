@@ -24,31 +24,6 @@ class Car(Agent):
         """ 
         Determines if the agent can move in the direction that was chosen
         """
-        """possible_steps = self.model.grid.get_neighborhood(
-            self.pos,
-            moore=False, # Boolean for whether to use Moore neighborhood (including diagonals) or Von Neumann (only up/down/left/right).
-            include_center=False) 
-        print(possible_steps)
-        
-        # Checks which grid cells are empty
-        freeSpaces = list(map(self.is_road, possible_steps))
-        print(freeSpaces)
-
-        next_moves = [p for p,f in zip(possible_steps, freeSpaces) if f == True]
-        print(next_moves)
-       
-        next_move = self.random.choice(next_moves)
-        # Now move:
-        if self.random.random() < 0.1:
-            self.model.grid.move_agent(self, next_move)
-            self.steps_taken+=1
-
-        # If the cell is empty, moves the agent to that cell; otherwise, it stays at the same position
-        if freeSpaces[self.direction]:
-            self.model.grid.move_agent(self, possible_steps[self.direction])
-            print(f"Se mueve de {self.pos} a {possible_steps[self.direction]}; direction {self.direction}")
-        else:
-            print(f"No se puede mover de {self.pos} en esa direccion.")"""
 
         # Get the class names of the agents in the cell the car is in
         current_self_content = self.model.grid.get_cell_list_contents([self.pos])
@@ -69,6 +44,7 @@ class Car(Agent):
             else:
                 return
 
+        # If the car is in front of a traffic light or standing a traffic light
         if "Traffic_Light" in current_self_content or self.get_front_agents_traffic_light_on():
             for agent in self.model.grid.get_cell_list_contents([self.pos]):
                 if isinstance(agent, Traffic_Light):
@@ -257,16 +233,6 @@ class Car(Agent):
                     elif agent.direction == "Right" and self.is_position_valid((self.pos[0] + 2, self.pos[1])) and self.is_position_valid((self.pos[0] + 1, self.pos[1])):
                         return agent.direction
         return None
-
-    def turn(self):
-        """
-        Turns the car if it is in a turn
-        """
-        turn = self.detect_turns()
-        if turn is not None:
-            self.turn = True
-            self.direction = turn
-            return 
 
     def get_front_agents(self):
         """

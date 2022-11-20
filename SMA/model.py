@@ -41,18 +41,10 @@ class RandomModel(Model):
 
 
         self.num_agents = N
-        agent1 = Car("car1", self)
-        agent2 = Car("car2", self)
-        agent3 = Car("car3", self)
-        agent4 = Car("car4", self)
-        self.schedule.add(agent1)
-        self.schedule.add(agent2)
-        self.schedule.add(agent3)
-        self.schedule.add(agent4)
-        self.grid.place_agent(agent1, (1, 1))
-        self.grid.place_agent(agent2, (1, 2))
-        self.grid.place_agent(agent3, (1, 3))
-        self.grid.place_agent(agent4, (23, 17))
+        for i in range(self.num_agents):
+            agent = Car(i, self)
+            self.schedule.add(agent)
+            self.grid.place_agent(agent, (0, 0))
         self.running = True 
 
     def step(self):
