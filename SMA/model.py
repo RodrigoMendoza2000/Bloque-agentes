@@ -15,6 +15,9 @@ class RandomModel(Model):
 
         dataDictionary = json.load(open("mapDictionary.txt"))
 
+        # Variable to see all the available destination positions
+        self.destination_positions = []
+
         with open('base.txt') as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])-1
@@ -38,13 +41,13 @@ class RandomModel(Model):
                     elif col == "D":
                         agent = Destination(f"d{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.destination_positions.append((c, self.height - r - 1))
 
 
         self.num_agents = N
         for i in range(self.num_agents):
             agent = Car(i, self)
             self.schedule.add(agent)
-            self.grid.place_agent(agent, (0, 0))
         self.running = True 
 
     def step(self):

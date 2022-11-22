@@ -38,6 +38,8 @@ def agent_portrayal(agent):
         portrayal["Layer"] = 1
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
+        portrayal["text"] = agent.unique_id
+        portrayal["text_color"] = "white"
 
     return portrayal
 
@@ -49,7 +51,7 @@ with open('base.txt') as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N":25}
+model_params = {"N":5}
 
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
