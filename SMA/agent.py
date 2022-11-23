@@ -31,7 +31,8 @@ class Car(Agent):
         """ 
         Determines if the agent can move in the direction that was chosen
         """
-        print(f"Agente: {self.unique_id} movimiento {self.direction}, final destination {self.final_destination}, is parking {self.parking}")
+        # print(f"Agente: {self.unique_id} movimiento {self.direction}, final destination {self.final_destination}, is parking {self.parking}")
+        #print(f"Agente: {self.unique_id} direction {self.direction}")
         
 
         # If the car is not present on the road and must be assigned a destination
@@ -50,8 +51,6 @@ class Car(Agent):
             # If there is no available destination in 100 iterations, wait
             else:
                 return
-
-
 
         # If the agent is in the destination and not on the road, move to the nearest road
         if not self.on_road and not self.must_be_assigned_destination:
@@ -109,6 +108,21 @@ class Car(Agent):
         if self.parking:
             # If it is still turning, it moves in the direction of the turn
             next_step = self.next_step_based_on_direction_self()
+            
+            current_cell_content = self.model.grid.get_cell_list_contents([self.pos])
+            
+            # The agent is already parked
+            for agent in current_cell_content:
+                if isinstance(agent, Destination):
+                    self.model.grid.remove_agent(self)
+                    # reset all the instance variables
+                    self.turning = False
+                    self.direction = None
+                    self.on_road = False
+                    self.must_be_assigned_destination = True
+                    self.final_destination = None
+                    self.parking = False
+        
             # print(f"{self.unique_id} parking")
             if self.is_position_valid_for_parking(next_step):
                 # print(f"{self.unique_id} Able to move!")
@@ -118,6 +132,7 @@ class Car(Agent):
             else:
                 # print(f"{self.unique_id} Unable to move")
                 return
+            
             
         
         # Perform if the agent wants to turn
