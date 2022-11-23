@@ -130,6 +130,7 @@ class Car(Agent):
                     self.must_be_assigned_destination = True
                     self.final_destination = None
                     self.parking = False
+                    self.from_destination = None
         
             # print(f"{self.unique_id} parking")
             if self.is_position_valid_for_parking(next_step):
@@ -538,3 +539,44 @@ class Road(Agent):
 
     def step(self):
         pass
+
+class Sidewalk(Agent):
+    """
+    Sidewalk agent for the people to be in
+    """
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
+    
+class Brush(Agent):
+    """
+    Brush agent for obstacles
+    """
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
+    
+class Busdestination(Agent):
+    """
+    Destination agent for busses
+    """
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
+    
+class Person(Agent):
+    """
+    Person agent
+    """
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+
+    def step(self):
+        pass
+

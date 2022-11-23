@@ -3,6 +3,7 @@ from mesa.time import RandomActivation
 from mesa.space import MultiGrid
 from agent import *
 import json
+import random
 
 class RandomModel(Model):
     """ 
@@ -17,6 +18,7 @@ class RandomModel(Model):
 
         # Variable to see all the available destination positions
         self.destination_positions = []
+        self.sidewalk_positions = []
 
         with open('base.txt') as baseFile:
             lines = baseFile.readlines()
@@ -42,12 +44,30 @@ class RandomModel(Model):
                         agent = Destination(f"d{r*self.width+c}", self)
                         self.grid.place_agent(agent, (c, self.height - r - 1))
                         self.destination_positions.append((c, self.height - r - 1))
+                    elif col == "W":
+                        agent = Sidewalk(f"d{r*self.width+c}", self)
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+                        self.sidewalk_positions.append((c, self.height - r - 1))
+                    elif col == "B":
+                        agent = Brush(f"d{r*self.width+c}", self)
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
+                    elif col == "P":
+                        agent = Busdestination(f"d{r*self.width+c}", self)
+                        self.grid.place_agent(agent, (c, self.height - r - 1))
 
 
         self.num_agents = N
         for i in range(self.num_agents):
             agent = Car(i, self)
             self.schedule.add(agent)
+        
+        
+        for i in range(25):
+            agent = Person(f"person{i}", self)
+            random_sidewalk = random.choice(self.sidewalk_positions)
+            self.grid.place_agent(agent, random_sidewalk)
+            self.schedule.add(agent)
+        
         self.running = True 
 
     def step(self):

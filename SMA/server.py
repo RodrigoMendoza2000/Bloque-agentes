@@ -40,6 +40,30 @@ def agent_portrayal(agent):
         portrayal["h"] = 0.8
         portrayal["text"] = agent.unique_id
         portrayal["text_color"] = "white"
+    
+    if (isinstance(agent, Sidewalk)):
+        portrayal["Color"] = "lightgrey"
+        portrayal["Layer"] = 0
+        portrayal["w"] = 0.8
+        portrayal["h"] = 0.8
+    
+    if (isinstance(agent, Brush)):
+        portrayal["Color"] = "lightyellow"
+        portrayal["Layer"] = 0
+        portrayal["w"] = 0.8
+        portrayal["h"] = 0.8
+    
+    if (isinstance(agent, Person)):
+        portrayal["Color"] = "yellow"
+        portrayal["Layer"] = 0
+        portrayal["w"] = 0.3
+        portrayal["h"] = 0.3
+        
+    if (isinstance(agent, Busdestination)):
+        portrayal["Color"] = "orange"
+        portrayal["Layer"] = 0
+        portrayal["w"] = 0.8
+        portrayal["h"] = 0.8
 
     return portrayal
 
@@ -51,7 +75,7 @@ with open('base.txt') as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N":30}
+model_params = {"N":100}
 
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
