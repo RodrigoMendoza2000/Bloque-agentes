@@ -25,6 +25,8 @@ class Car(Agent):
         self.final_destination = None
         # If the car is parking
         self.parking = False
+        # From which destination the car came from
+        self.from_destination = None
         
 
     def move(self):
@@ -42,11 +44,14 @@ class Car(Agent):
             safety_counter = 0
             while self.has_next_step_agent(random_destination, "Car") and safety_counter < 100:
                 random_destination = random.choice(self.model.destination_positions)
+                self.from_destination = random_destination
                 safety_counter += 1
                 # print(self.has_next_step_agent(random_destination, "Car"))
             if safety_counter < 100:
                 self.model.grid.place_agent(self, random_destination)
                 self.must_be_assigned_destination = False
+                self.from_destination = random_destination
+                
                 return 
             # If there is no available destination in 100 iterations, wait
             else:
@@ -64,6 +69,9 @@ class Car(Agent):
 
         if self.final_destination is None:
             self.final_destination = random.choice(self.model.destination_positions)
+            while self.final_destination == self.from_destination:
+                self.final_destination = random.choice(self.model.destination_positions)
+            
 
         # Get the class names of the agents in the cell the car is in
         current_self_content = self.model.grid.get_cell_list_contents([self.pos])
