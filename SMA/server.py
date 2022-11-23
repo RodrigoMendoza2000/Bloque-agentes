@@ -3,9 +3,11 @@ from model import RandomModel
 from mesa.visualization.modules import CanvasGrid, BarChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 
+
 def agent_portrayal(agent):
-    if agent is None: return
-    
+    if agent is None:
+        return
+
     portrayal = {"Shape": "rect",
                  "Filled": "true",
                  "Layer": 1,
@@ -16,7 +18,7 @@ def agent_portrayal(agent):
     if (isinstance(agent, Road)):
         portrayal["Color"] = "grey"
         portrayal["Layer"] = 0
-    
+
     if (isinstance(agent, Destination)):
         portrayal["Color"] = "lightgreen"
         portrayal["Layer"] = 0
@@ -40,25 +42,25 @@ def agent_portrayal(agent):
         portrayal["h"] = 0.8
         portrayal["text"] = agent.unique_id
         portrayal["text_color"] = "white"
-    
+
     if (isinstance(agent, Sidewalk)):
         portrayal["Color"] = "lightgrey"
         portrayal["Layer"] = 0
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
-    
+
     if (isinstance(agent, Brush)):
         portrayal["Color"] = "lightyellow"
         portrayal["Layer"] = 0
         portrayal["w"] = 0.8
         portrayal["h"] = 0.8
-    
+
     if (isinstance(agent, Person)):
         portrayal["Color"] = "yellow"
         portrayal["Layer"] = 0
         portrayal["w"] = 0.3
         portrayal["h"] = 0.3
-        
+
     if (isinstance(agent, Busdestination)):
         portrayal["Color"] = "orange"
         portrayal["Layer"] = 0
@@ -66,6 +68,7 @@ def agent_portrayal(agent):
         portrayal["h"] = 0.8
 
     return portrayal
+
 
 width = 0
 height = 0
@@ -75,11 +78,11 @@ with open('base.txt') as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N":100}
+model_params = {"N": 52}
 
 grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
 
 server = ModularServer(RandomModel, [grid], "Traffic Base", model_params)
-                       
-server.port = 8521 # The default
+
+server.port = 8521  # The default
 server.launch()
