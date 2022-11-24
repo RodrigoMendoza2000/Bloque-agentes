@@ -125,52 +125,6 @@ class Car(Agent):
                 return True
         return False
 
-    def get_current_road_direction(self):
-        """
-        Get the current direction of the cell the agent is in
-        """
-        for agent in self.model.grid.get_cell_list_contents([self.pos]):
-            if isinstance(agent, Road):
-                return agent.direction
-        return None
-
-    def next_step_based_on_direction(self, stuck=False):
-        """
-        Returns the next step based on the direction the agent is facing if not standing on road,
-        else get the next step based on the direction of the road
-        """
-        direction = self.get_current_road_direction()
-        # print(f"\nAgente: {self.unique_id} direction {direction}")
-        # For when the car is on a road that has a traffic light
-        if direction is None and self.direction is not None:
-            if self.direction == "Down":
-                return (self.pos[0], self.pos[1] - 1)
-            # Up
-            elif self.direction == "Up":
-                return (self.pos[0], self.pos[1] + 1)
-            # Left
-            elif self.direction == "Left":
-                return (self.pos[0] - 1, self.pos[1])
-            # Right
-            elif self.direction == "Right":
-                return (self.pos[0] + 1, self.pos[1])
-        else:
-            if stuck:
-                direction = self.get_road_direction_if_stuck()
-                
-            # Down
-            if direction == "Down":
-                return (self.pos[0], self.pos[1] - 1)
-            # Up
-            elif direction == "Up":
-                return (self.pos[0], self.pos[1] + 1)
-            # Left
-            elif direction == "Left":
-                return (self.pos[0] - 1, self.pos[1])
-            # Right
-            elif direction == "Right":
-                return (self.pos[0] + 1, self.pos[1])
-
 
     def next_step_based_on_direction_self(self):
         """
@@ -218,14 +172,6 @@ class Car(Agent):
                 return True
         return False
 
-    def get_road_direction_if_stuck(self):
-        """
-        If the car is stuck, get the direction of the road it is in
-        """
-        for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=2):
-            if isinstance(agent, Road) and agent.direction != self.direction:
-                return agent.direction
-        return None
 
     def has_next_step_agent(self, next_step, agent_type):
         """
@@ -237,128 +183,15 @@ class Car(Agent):
             return True
         return False 
 
-    def valid_turns(self):
+    def standing_on_light(self):
         """
-        Returns the valid turns the agent can take based on 
+        Checks if the agent is standing on a traffic light
         """
-        if self.direction == "Up":
-            return ["Left", "Right"]
-        elif self.direction == "Down":
-            return ["Left", "Right"]
-        elif self.direction == "Left":
-            return ["Up", "Down"]
-        elif self.direction == "Right":
-            return ["Up", "Down"]
-
-    def detect_turns(self):
-        """
-        Detects if there is a turn in the next 2 cells
-        """
-        for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=2):
-            
-            if isinstance(agent, Road):
-                if agent.direction != self.direction and agent.direction in self.valid_turns():
-                    if agent.direction == "Up" and self.is_position_valid((self.pos[0], self.pos[1] + 2)) and self.is_position_valid((self.pos[0], self.pos[1] + 1)):
-                        return agent.direction
-                    elif agent.direction == "Down" and self.is_position_valid((self.pos[0], self.pos[1] - 2)) and self.is_position_valid((self.pos[0], self.pos[1] - 1)):
-                        return agent.direction
-                    elif agent.direction == "Left" and self.is_position_valid((self.pos[0] - 2, self.pos[1])) and self.is_position_valid((self.pos[0] - 1, self.pos[1])):
-                        return agent.direction
-                    elif agent.direction == "Right" and self.is_position_valid((self.pos[0] + 2, self.pos[1])) and self.is_position_valid((self.pos[0] + 1, self.pos[1])):
-                        return agent.direction
-        return None
-
-    def detect_parking(self):
-        """
-        Detects if there is a parking spot in the next 2 cells
-        """
-        
-        """for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=2):
-            if agent.pos == self.final_destination:
-                # The destination is on the left
-                if agent.pos[0] - self.pos[0] < 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] - 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] - 1, self.pos[1])):
-                    return True
-                # The destination is on the right
-                elif agent.pos[0] - self.pos[0] > 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] + 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] + 1, self.pos[1])):
-                    return True
-                # The destination is Up
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] > 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 1)):
-                    return True
-                # The destination is Down
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] < 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 1)):
-                    return True
-        return False"""
-        for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=2):
-            if agent.pos == self.final_destination:
-                # The destination is on the left
-                if agent.pos[0] - self.pos[0] < 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] - 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] - 1, self.pos[1])):
-                    return True
-                # The destination is on the right
-                elif agent.pos[0] - self.pos[0] > 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] + 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] + 1, self.pos[1])):
-                    return True
-                # The destination is Up
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] > 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 1)):
-                    return True
-                # The destination is Down
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] < 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 1)):
-                    return True
-        for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=1):
-             if agent.pos == self.final_destination:
-                # The destination is on the left
-                if agent.pos[0] - self.pos[0] < 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] - 1, self.pos[1])):
-                    return True
-                # The destination is on the right
-                elif agent.pos[0] - self.pos[0] > 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] + 1, self.pos[1])):
-                    return True
-                # The destination is Up
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] > 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 1)):
-                    return True
-                # The destination is Down
-                elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] < 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 1)):
-                    return True
-        return False
-
-
-    def get_front_agents(self):
-        """
-        Returns the agents in front of the car
-        """
-        
-        if self.direction is not None:
-            if self.direction == "Up":
-                # current_self_content = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1] + 1)])
-                # return [type(agent).__name__ for agent in current_self_content] 
-                if not self.model.grid.out_of_bounds((self.pos[0], self.pos[1] + 1)):
-                    return self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1] + 1)])
-                return []
-                
-            elif self.direction == "Down":
-                # current_self_content = self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1] + 1)])
-                # return [type(agent).__name__ for agent in current_self_content]
-                if not self.model.grid.out_of_bounds((self.pos[0], self.pos[1] - 1)):
-                    return self.model.grid.get_cell_list_contents([(self.pos[0], self.pos[1] - 1)])
-                return []
-            elif self.direction == "Left":
-                # current_self_content = self.model.grid.get_cell_list_contents([(self.pos[0] - 1, self.pos[1])])
-                # return [type(agent).__name__ for agent in current_self_content]
-                if not self.model.grid.out_of_bounds((self.pos[0] - 1, self.pos[1])):
-                    return self.model.grid.get_cell_list_contents([(self.pos[0] - 1, self.pos[1])])
-                return []
-            elif self.direction == "Right":
-                # current_self_content = self.model.grid.get_cell_list_contents([(self.pos[0] + 1, self.pos[1])])
-                # return [type(agent).__name__ for agent in current_self_content]
-                if not self.model.grid.out_of_bounds((self.pos[0] + 1, self.pos[1])):
-                    return self.model.grid.get_cell_list_contents([(self.pos[0] + 1, self.pos[1])])
-                return []
-        return []
-
-    def get_front_agents_traffic_light_on(self):
-        """
-        Return if the agent in front of the car is a traffic light and its on
-        """
-        for agent in self.get_front_agents():
+        # state: False = red, True = green
+        cell_content = self.model.grid.get_cell_list_contents([self.pos])
+        for agent in cell_content:
             if isinstance(agent, Traffic_Light):
-                if not agent.state:
+                if agent.state:
                     return True
         return False
     

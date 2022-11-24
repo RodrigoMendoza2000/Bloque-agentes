@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
-from agent import *
+from agent_shortest_path import *
 import json
 import random
 

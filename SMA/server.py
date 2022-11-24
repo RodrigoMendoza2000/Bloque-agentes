@@ -1,4 +1,4 @@
-from agent import *
+from agent_shortest_path import *
 from model import RandomModel
 from mesa.visualization.modules import CanvasGrid, BarChartModule
 from mesa.visualization.ModularVisualization import ModularServer
@@ -80,7 +80,7 @@ with open('base.txt') as baseFile:
     width = len(lines[0])-1
     height = len(lines)
 
-model_params = {"N": 75}
+model_params = {"N": 1}
 
 grid = CanvasGrid(agent_portrayal, width, height, 800, 800)
 
