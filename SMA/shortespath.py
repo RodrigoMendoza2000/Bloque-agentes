@@ -246,11 +246,37 @@ class Dijkstra:
 
         return self.build_path(self.vertex_labels[vertex]['prev']) + [vertex]
 
+    def shortest_path_coordinates(self, vertex):
+        path = self.build_path(vertex)
+        return [nodo_coordenada[vertex] for vertex in path]
+
+class DijkstraCoordinate(Dijkstra):
+    """
+    To get shortest path between two coordinates, using the parameters as coordinates, not as letters
+    """
+    def __init__(self, graph, start_coordinate):
+        self.graph = graph
+        vertex_from_coordinate = [i for i in nodo_coordenada if nodo_coordenada[i] == start_coordinate][0]
+        self.start_vertex = vertex_from_coordinate
+        self.vertices = list(graph.keys())
+
+        # distance: minimum distance from start vertex
+        self.vertex_labels = {
+            vertex: {'distance': math.inf, 'prev': '-'} for vertex in self.vertices}
+
+        # Obviously, the start vertex has no distance from itself
+        self.vertex_labels[vertex_from_coordinate]['distance'] = 0
+
+    def shortest_path_coordinates(self, coordinate):
+        vertex_from_coordinate = [i for i in nodo_coordenada if nodo_coordenada[i] == coordinate][0]
+        path = self.build_path(vertex_from_coordinate)
+        return [nodo_coordenada[vertex] for vertex in path]
+
 
 if __name__ == '__main__':
-    dijkstraCity = Dijkstra(simCity, start_vertex='AL')
+    dijkstraCity = DijkstraCoordinate(graph=simCity, start_coordinate=(3,22))
     dijkstraCity.dijkstra()
-    print(dijkstraCity.build_path('BH'))
+    print(dijkstraCity.shortest_path_coordinates((18,14)))
 
     # for vertex in dijkstraCity.vertices:
     #   print('C ->', vertex + ':', dijkstraCity.build_path(vertex))

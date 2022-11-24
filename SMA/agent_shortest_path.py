@@ -1,5 +1,6 @@
 from mesa import Agent
 import random
+from shortespath import DijkstraCoordinate, simCity, nodo_coordenada
 
 class Car(Agent):
     """
@@ -39,11 +40,11 @@ class Car(Agent):
 
         # If the car is not present on the road and must be assigned a destination
         if self.must_be_assigned_destination:
-            random_destination = random.choice(self.model.destination_positions)
+            random_destination = random.choice(self.model.destination_entrance)
             # Safety counter in case there is no available position
             safety_counter = 0
             while self.has_next_step_agent(random_destination, "Car") and safety_counter < 100:
-                random_destination = random.choice(self.model.destination_positions)
+                random_destination = random.choice(self.model.destination_entrance)
                 self.from_destination = random_destination
                 safety_counter += 1
                 # print(self.has_next_step_agent(random_destination, "Car"))
@@ -57,188 +58,56 @@ class Car(Agent):
             else:
                 return
 
-        # If the agent is in the destination and not on the road, move to the nearest road
-        if not self.on_road and not self.must_be_assigned_destination:
-            for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=1):
-                if isinstance(agent, Road):
-                    if self.is_position_valid(agent.pos):
-                        self.model.grid.move_agent(self, agent.pos)
-                        self.on_road = True
-                        return
-            return
-
         if self.final_destination is None:
             self.final_destination = random.choice(self.model.destination_positions)
             while self.final_destination == self.from_destination:
                 self.final_destination = random.choice(self.model.destination_positions)
-            
 
-        # Get the class names of the agents in the cell the car is in
-        current_self_content = self.model.grid.get_cell_list_contents([self.pos])
-        current_self_content = [type(agent).__name__ for agent in current_self_content] 
-
-
-        # Detects if the final destination is close
-        if self.detect_parking() and not self.parking:
-            self.parking = True
-            """
-            Detects if there is a parking spot in the next 2 cells
-            """
-            for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=2):
-                if agent.pos == self.final_destination:
-                    # The destination is on the left
-                    if agent.pos[0] - self.pos[0] < 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] - 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] - 1, self.pos[1])):
-                        self.direction = "Left"
-                    # The destination is on the right
-                    elif agent.pos[0] - self.pos[0] > 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] + 2, self.pos[1])) and self.is_position_valid_for_parking((self.pos[0] + 1, self.pos[1])):
-                        self.direction = "Right"
-                    # The destination is Up
-                    elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] > 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 1)):
-                        self.direction = "Up"
-                    # The destination is Down
-                    elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] < 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 2)) and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 1)):
-                        self.direction = "Down"
-            for agent in self.model.grid.iter_neighbors(self.pos, moore=False, radius=1):
-                if agent.pos == self.final_destination:
-                    # The destination is on the left
-                    if agent.pos[0] - self.pos[0] < 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] - 1, self.pos[1])):
-                        self.direction = "Left"
-                    # The destination is on the right
-                    elif agent.pos[0] - self.pos[0] > 0 and agent.pos[1] == self.pos[1] and self.is_position_valid_for_parking((self.pos[0] + 1, self.pos[1])):
-                        self.direction = "Right"
-                    # The destination is Up
-                    elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] > 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] + 1)):
-                        self.direction = "Up"
-                    # The destination is Down
-                    elif agent.pos[0] == self.pos[0] and agent.pos[1] - self.pos[1] < 0 and self.is_position_valid_for_parking((self.pos[0], self.pos[1] - 1)):
-                        self.direction = "Down"
-
-        if self.parking:
-            # If it is still turning, it moves in the direction of the turn
-            next_step = self.next_step_based_on_direction_self()
-            
-            current_cell_content = self.model.grid.get_cell_list_contents([self.pos])
-            
-            # The agent is already parked
-            for agent in current_cell_content:
-                if isinstance(agent, Destination):
-                    self.model.grid.remove_agent(self)
-                    # reset all the instance variables
-                    self.turning = False
-                    self.direction = None
-                    self.on_road = False
-                    self.must_be_assigned_destination = True
-                    self.final_destination = None
-                    self.parking = False
-                    self.from_destination = None
+            dijkstraCity = DijkstraCoordinate(graph=simCity, start_coordinate=self.from_destination)
+            dijkstraCity.dijkstra()
+            self.path = dijkstraCity.shortest_path_coordinates(self.final_destination)
         
-            # print(f"{self.unique_id} parking")
+
+        if self.pos == self.path[0]:
+            self.path.pop(0)
+
+        if len(self.path) == 0:
+            self.model.grid.remove_agent(self)
+            # reset all the instance variables
+            self.turning = False
+            self.direction = None
+            self.on_road = False
+            self.must_be_assigned_destination = True
+            self.final_destination = None
+            self.parking = False
+            self.from_destination = None
+            return
+        
+        if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
+            self.direction = "Down"
+            next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
-                # print(f"{self.unique_id} Able to move!")
                 self.model.grid.move_agent(self, next_step)
-                return
-            # If its not able to move, stops moving
-            else:
-                # print(f"{self.unique_id} Unable to move")
-                return
-            
-            
-        
-        # Perform if the agent wants to turn
-        if self.turning:
-            # If it reached the destination of the turn, it stops turning
-            if self.direction == self.get_current_road_direction():
-                self.turning = False
-                self.direction = None
-                # If it is still turning, it moves in the direction of the turn
-                next_step = self.next_step_based_on_direction()
-                if self.is_position_valid(next_step):
-                    self.model.grid.move_agent(self, next_step)
-                    return
-                # If its not able to move, stops moving
-                else:
-                    return
-            # If it is still turning, it moves in the direction of the turn
+        elif self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] < 0:
+            self.direction = "Up"
             next_step = self.next_step_based_on_direction_self()
-            if self.is_position_valid(next_step):
+            if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
-                return
-            # If its not able to move, stops moving
-            else:
-                return
+        elif self.pos[0] - self.path[0][0] > 0 and self.pos[1] == self.path[0][1]:
+            self.direction = "Left"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
+        elif self.pos[0] - self.path[0][0] < 0 and self.pos[1] == self.path[0][1]:
+            self.direction = "Right"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
 
-        # If the car is in front of a traffic light or standing a traffic light
-        if "Traffic_Light" in current_self_content or self.get_front_agents_traffic_light_on():
-            for agent in self.model.grid.get_cell_list_contents([self.pos]):
-                if isinstance(agent, Traffic_Light):
-                    # If the light is in green, move the car, else stay in the same position
-                    if agent.state:
-                        next_step = self.next_step_based_on_direction()
-                        if self.is_position_valid(next_step):
-                            self.model.grid.move_agent(self, next_step)
-                            # print(f"Se mueve de {self.pos} a {next_step}; direction {self.direction}")
-                        else:
-                            pass
-                            # print(f"No se puede mover de {self.pos} en esa direccion.")
-                    else:
-                        pass
-                        # print(f"No se puede mover de {self.pos} en esa direccion.")
-        # If the car is in a road without a traffic light
-        else:
-            next_step = self.next_step_based_on_direction()
-            # Assign the self direction based on the road direction
-            if next_step is not None:
-                self.direction = self.get_current_road_direction()
-            # If it can move, move it, else stand still
-            if self.is_position_valid(next_step):
-                # If there is a possible turn, 50% chance of turning
-                if self.detect_turns() is not None:
-                    # print(f"{self.unique_id} Hay un posible giro")
-                    possible_random = ['Advance', 'Advance', 'Advance', 'Turn', 'Turn']
-                    # 50% chance of advancing or turning
-                    random_action = self.random.choice(possible_random)
-                    # If advance, it moves normally following the direction of the road
-                    if random_action == 'Advance':
-                        self.model.grid.move_agent(self, next_step)
-                        # print(f"Se mueve de {self.pos} a {next_step}; direction {self.direction}")
-                    # If turn, it starts turning
-                    elif random_action == 'Turn':
-                        # print(f"{self.unique_id} Gira")
-                        self.turning = True
-                        self.direction = self.detect_turns()
-                        if self.direction == self.get_current_road_direction():
-                            self.turning = False
-                            self.direction = None
-                            return 
-                        # If it is still turning, it moves in the direction of the turn
-                        next_step = self.next_step_based_on_direction_self()
-                        if self.is_position_valid(next_step):
-                            self.model.grid.move_agent(self, next_step)
-                            return
-                        # If its not able to move, stops moving
-                        else:
-                            return
+        print(f"Agente: {self.unique_id} path {self.path}")
+            
 
-                else:
-                    self.model.grid.move_agent(self, next_step)
-                    # print(f"Se mueve de {self.pos} a {next_step}; direction {self.direction}")
-
-            # If it is not out of bounds but stuck by a car
-            elif not self.model.grid.out_of_bounds(next_step) and self.has_next_step_agent(next_step, 'Car'):
-                # print(f"No se puede mover de {self.pos} en esa direccion.")
-                return
-            else:
-                # If it cannot move because it is out of bounds, change direction
-                next_step = self.next_step_based_on_direction(stuck = True)
-                if next_step is not None:
-                    self.direction = self.get_road_direction_if_stuck()
-                if next_step is not None and self.is_position_valid(next_step):
-                    self.model.grid.move_agent(self, next_step)
-                    # print(f"Se mueve de {self.pos} a {next_step}; direction {self.direction}")
-                # If there is literally no position
-                else:
-                    pass
-                    # print(f"No se puede mover de {self.pos} en esa direccion.")
+        
 
     def step(self):
         """ 
