@@ -84,27 +84,31 @@ class Car(Agent):
             return
         
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
+            self.set_turn_conditional("Down")
             self.direction = "Down"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] < 0:
+            self.set_turn_conditional("Up")
             self.direction = "Up"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] > 0 and self.pos[1] == self.path[0][1]:
+            self.set_turn_conditional("Left")
             self.direction = "Left"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] < 0 and self.pos[1] == self.path[0][1]:
+            self.set_turn_conditional("Right")
             self.direction = "Right"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
 
-        print(f"Agente: {self.unique_id} path {self.path}")
+        # print(f"Agente: {self.unique_id} is turning {self.turning}")
             
 
         
@@ -194,6 +198,15 @@ class Car(Agent):
                 if agent.state:
                     return True
         return False
+
+    def set_turn_conditional(self, next_direction):
+        """
+        Changes between turning and not turning based on the next direction
+        """
+        if self.direction != next_direction:
+                self.turning = True
+        else:
+            self.turning = False
     
 
 
@@ -205,11 +218,121 @@ class Traffic_Light(Agent):
         super().__init__(unique_id, model)
         self.state = state
         self.timeToChange = timeToChange
+        # The current cars that the sole traffic light is looking
+        self.current_cars = 0
+        # The direction from which the cars are coming
+        self.direction = None
+        # The traffic light next to it
+        self.partner = None
+        # The traffic lights that are contrary the traffic light
+        self.opposing_traffic_lights = ()
+        # All current cars counting the ones of the neighbours
+        self.total_cars = 0
 
     def step(self):
         # if self.model.schedule.steps % self.timeToChange == 0:
         #     self.state = not self.state
-        pass
+
+        if self.direction is None:
+            self.direction = self.get_direction_of_cars()
+
+        if self.partner is None:
+            self.partner = self.get_partner()
+
+        if self.opposing_traffic_lights == ():
+            self.opposing_traffic_lights = self.get_opposing_traffic_lights()
+
+        self.current_cars = self.get_number_of_cars(3)
+        self.total_cars = self.current_cars + self.get_number_cars_from_partner()
+        # if self.current_cars != 0:
+        #    print(f"Agente: {self.unique_id} cars: {self.current_cars}")
+        if self.total_cars > self.get_opposing_traffic_lights_cars():
+            self.state = True
+            self.partner.state = True
+            for agent in self.opposing_traffic_lights:
+                agent.state = False
+        
+        elif self.total_cars == self.get_opposing_traffic_lights_cars():
+            pass
+
+
+    def get_opposing_traffic_lights(self):
+        opposing_traffic_lights = []
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=True, radius=3):
+            if isinstance(agent, Traffic_Light) and agent != self.partner:
+                opposing_traffic_lights.append(agent)
+        return opposing_traffic_lights
+
+    def get_opposing_traffic_lights_cars(self):
+        opposing_traffic_lights_cars = 0
+        for agent in self.opposing_traffic_lights:
+            opposing_traffic_lights_cars += agent.current_cars
+        return opposing_traffic_lights_cars
+
+    def get_id(self):
+        return self.unique_id
+
+    def get_partner(self):
+        """
+        Gets the partner of the traffic light
+        """
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Traffic_Light):
+                return agent
+
+    def get_number_cars_from_partner(self):
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Traffic_Light):
+                return agent.current_cars
+
+    def get_number_of_cars(self, number_positions):
+        """
+        Gets the number of cars in the traffic light
+        """
+        number_cars = 0
+        for x in range(0, number_positions + 1):
+            if self.direction == "Up":
+                next_step = (self.pos[0], self.pos[1] - x)
+            elif self.direction == "Down":
+                next_step = (self.pos[0], self.pos[1] + x)
+            elif self.direction == "Left":
+                next_step = (self.pos[0] + x, self.pos[1])
+            elif self.direction == "Right":
+                next_step = (self.pos[0] - x, self.pos[1])
+                
+            if self.model.grid.out_of_bounds(next_step):
+                number_cars += 0
+            else:
+                cell_content = self.model.grid.get_cell_list_contents([next_step])
+                for agent in cell_content:
+                    if isinstance(agent, Car):
+                        number_cars += 1
+        return number_cars
+
+    def get_direction_of_cars(self):
+        partner_direction = self.get_partner_position()
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Road):
+                if (partner_direction in ("Up", "Down")) and (agent.direction in ("Left", "Right")):
+                        return agent.direction
+                elif (partner_direction in ("Left", "Right")) and (agent.direction in ("Up", "Down")):
+                        return agent.direction
+        return None
+
+    def get_partner_position(self):
+        partner_pos = ()
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Traffic_Light):
+                partner_pos = agent.pos
+
+        if self.pos[0] - partner_pos[0] > 0:
+            return "Left"
+        elif self.pos[0] - partner_pos[0] < 0:
+            return "Right"
+        elif self.pos[1] - partner_pos[1] > 0:
+            return "Down"
+        elif self.pos[1] - partner_pos[1] < 0:
+            return "Up"
 
 class Destination(Agent):
     """
