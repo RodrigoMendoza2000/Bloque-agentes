@@ -42,9 +42,10 @@ def getAgents():
                         {"id": str(a.unique_id),
                          "x": x,
                          "y": 0,
-                         "z": z})
+                         "z": z,
+                         "visible": a.must_be_assigned_destination})
 
-        return jsonify({"positions": agentsPositions})
+        return jsonify({"agents": agentsPositions})
 
 
 # Se encarga de hacerle el update al modelo, puede ser muy tardado
