@@ -100,8 +100,8 @@ class RandomModel(Model):
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
-        if self.schedule.steps % 10 == 0:
+        """if self.schedule.steps % 10 == 0:
             for agents, x, y in self.grid.coord_iter():
                 for agent in agents:
                     if isinstance(agent, Traffic_Light):
-                        agent.state = not agent.state
+                        agent.state = not agent.state"""
