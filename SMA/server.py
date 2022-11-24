@@ -18,6 +18,8 @@ def agent_portrayal(agent):
     if (isinstance(agent, Road)):
         portrayal["Color"] = "grey"
         portrayal["Layer"] = 0
+        portrayal["text"] = agent.pos
+        portrayal["text_color"] = "black"
 
     if (isinstance(agent, Destination)):
         portrayal["Color"] = "lightgreen"
@@ -80,7 +82,7 @@ with open('base.txt') as baseFile:
 
 model_params = {"N": 52}
 
-grid = CanvasGrid(agent_portrayal, width, height, 500, 500)
+grid = CanvasGrid(agent_portrayal, width, height, 800, 800)
 
 server = ModularServer(RandomModel, [grid], "Traffic Base", model_params)
 
