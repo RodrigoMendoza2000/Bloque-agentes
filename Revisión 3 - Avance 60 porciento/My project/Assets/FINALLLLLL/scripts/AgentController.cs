@@ -9,15 +9,15 @@ public class AgentData
 {
     public string id;
     public float x, y, z;
-    public bool visible;
+    public List<int> destination;
 
-    public AgentData(string id, float x, float y, float z, bool visible)
+    public AgentData(string id, float x, float y, float z, List<int> destination)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
-        this.visible = visible;
+        this.destination = destination;
     }
 }
 
@@ -95,23 +95,38 @@ public class AgentController : MonoBehaviour
             dt = 1.0f - (timer / timeToUpdate);
 
             float ndt = dt * dt * (3 - 2 * dt);
-            Debug.Log(currPositions.Count);
+
             foreach (var agent in currPositions)
             {
-                Debug.Log(agent.Key);
-                Vector3 currentPosition = agent.Value;
-                Vector3 previousPosition = prevPositions[agent.Key];
-                // Interpolación lineal para que se mueva poco a poco hasta la dirección final
+                bool draw = true;
 
-                Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                // Resta de vectores
-                Vector3 direction = currentPosition - interpolated;
-
-                agents[agent.Key].transform.localPosition = interpolated;
-
-                if (agent.Key[0] == '1')
+                foreach (AgentData agentD in agentsData.agents)
                 {
-                   if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                    if (agentD.id == agent.Key)
+                    {
+                        if (agentD.destination.Count == 0 || (agent.Value.x == agentD.destination[0] && agent.Value.z == agentD.destination[1]))
+                        {
+                            draw = false;
+                        }
+                    }
+                }
+
+                if (draw)
+                {
+                    Vector3 currentPosition = agent.Value;
+                    Vector3 previousPosition = prevPositions[agent.Key];
+                    // Interpolación lineal para que se mueva poco a poco hasta la dirección final
+
+                    Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
+                    // Resta de vectores
+                    Vector3 direction = currentPosition - interpolated;
+
+                    agents[agent.Key].transform.localPosition = interpolated;
+
+                    if (agent.Key[0] == '1')
+                    {
+                        if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                    }
                 }
             }
             // Interpolación
@@ -178,6 +193,7 @@ public class AgentController : MonoBehaviour
             Debug.Log(www.error);
         else
         {
+
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
             foreach (AgentData agent in agentsData.agents)
@@ -185,9 +201,9 @@ public class AgentController : MonoBehaviour
                 Vector3 newagentPosition = new Vector3(agent.x, agent.y, agent.z);
 
                 GameObject agentobject;
-                if (!agents.TryGetValue(agent.id, out agentobject))
+                //if (!agents.TryGetValue(agent.id, out agentobject))
                 //if(started_a)
-                //if (!idcars.contains(agent.key))
+                if (!idCars.Contains(agent.id))
                 {
                     // si es la primera vez que se ejecuta
                     prevPositions[agent.id] = newagentPosition;
