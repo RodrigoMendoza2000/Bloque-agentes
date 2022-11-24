@@ -9,27 +9,26 @@ public class AgentData
 {
     public string id;
     public float x, y, z;
+    public bool visible;
 
-    public AgentData(string id, float x, float y, float z, bool box)
+    public AgentData(string id, float x, float y, float z, bool visible)
     {
         this.id = id;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.visible = visible;
     }
 }
 
 
 [Serializable]
-
 public class AgentsData
 {
-    public List<AgentData> positions;
+    public List<AgentData> agents;
 
-    public AgentsData() => this.positions = new List<AgentData>();
+    public AgentsData() => this.agents = new List<AgentData>();
 }
-
-[Serializable]
 
 
 
@@ -47,8 +46,10 @@ public class AgentController : MonoBehaviour
     string updateEndpoint = "/update";
 
     AgentsData agentsData, obstacleData;
+    Dictionary<string, AgentData>  agentsDict = new Dictionary<string, AgentData>();
     Dictionary<string, GameObject> agents;
     Dictionary<string, Vector3> prevPositions, currPositions;
+    HashSet<string> idCars = new HashSet<string>();
 
     bool update_a = false, started_a = false;
     bool update_b = false, started_b = false;
@@ -87,19 +88,17 @@ public class AgentController : MonoBehaviour
                 update_b = true;
                 StartCoroutine(UpdateSimulation());
             }
-
         // Si ya actualicé posiciones de mis agentes
         if (update_a)
         {
-            Debug.Log(currPositions.Count);
-
             timer -= Time.deltaTime;
             dt = 1.0f - (timer / timeToUpdate);
 
             float ndt = dt * dt * (3 - 2 * dt);
-
+            Debug.Log(currPositions.Count);
             foreach (var agent in currPositions)
             {
+                Debug.Log(agent.Key);
                 Vector3 currentPosition = agent.Value;
                 Vector3 previousPosition = prevPositions[agent.Key];
                 // Interpolación lineal para que se mueva poco a poco hasta la dirección final
@@ -112,9 +111,8 @@ public class AgentController : MonoBehaviour
 
                 if (agent.Key[0] == '1')
                 {
-                    if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                   if (direction != Vector3.zero) agents[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
                 }
-
             }
             // Interpolación
             // float t = (timer / timeToUpdate);
@@ -180,32 +178,33 @@ public class AgentController : MonoBehaviour
             Debug.Log(www.error);
         else
         {
-
             agentsData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-
-            foreach (AgentData agent in agentsData.positions)
+            foreach (AgentData agent in agentsData.agents)
             {
-                Vector3 newAgentPosition = new Vector3(agent.x, agent.y, agent.z);
+                Vector3 newagentPosition = new Vector3(agent.x, agent.y, agent.z);
 
-                if (!started_a)
+                GameObject agentobject;
+                if (!agents.TryGetValue(agent.id, out agentobject))
+                //if(started_a)
+                //if (!idcars.contains(agent.key))
                 {
                     // si es la primera vez que se ejecuta
-                    prevPositions[agent.id] = newAgentPosition;
+                    prevPositions[agent.id] = newagentPosition;
                     //guarda referencia al agente nuevo en la posicion inicial 
-                    agents[agent.id] = Instantiate(agentPrefab, newAgentPosition, Quaternion.identity);
-
-
+                    agents[agent.id] = Instantiate(agentPrefab, newagentPosition, Quaternion.identity);
+                    idCars.Add(agent.id);
                 }
                 else
                 {   // no es la 1ª vez
                     Vector3 currentPosition = new Vector3();
                     if (currPositions.TryGetValue(agent.id, out currentPosition))
                         prevPositions[agent.id] = currentPosition;
-                    currPositions[agent.id] = newAgentPosition;
+                    currPositions[agent.id] = newagentPosition;
                 }
             }
-            if (agents.Count > 0) {
+            if (agents.Count == N)
+            {
                 started_a = true;
             }
             update_a = true;
@@ -213,45 +212,46 @@ public class AgentController : MonoBehaviour
     }
 
 
-    IEnumerator GetObstacleData()
-    {
-        // Posiciones de los agentes obstáculos
-        UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
-        yield return www.SendWebRequest();
+    //IEnumerator GetObstacleData()
+    //{
+    //    // Posiciones de los agentes obstáculos
+    //    UnityWebRequest www = UnityWebRequest.Get(serverUrl + getObstaclesEndpoint);
+    //    yield return www.SendWebRequest();
 
-        if (www.result != UnityWebRequest.Result.Success)
-            Debug.Log(www.error);
-        else
-        {
-            obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
+    //    if (www.result != UnityWebRequest.Result.Success)
+    //        Debug.Log(www.error);
+    //    else
+    //    {
+    //        Debug.Log(www.downloadHandler.text);
+    //        obstacleData = JsonUtility.FromJson<AgentsData>(www.downloadHandler.text);
 
-            //Debug.Log(obstacleData.positions);
-            //Debug.Log(www.downloadHandler.text);
+    //        //Debug.Log(obstacleData.positions);
+    //        //Debug.Log(www.downloadHandler.text);
 
-            foreach (AgentData obstacle in obstacleData.positions)
-            {
-                // Crear los prefabs. Agregar objetos nuevos a Unity
+    //        foreach (AgentData obstacle in obstacleData.agents.Values)
+    //        {
+    //            // Crear los prefabs. Agregar objetos nuevos a Unity
 
-                Vector3 newAgentPosition = new Vector3(obstacle.x, obstacle.y, obstacle.z);
+    //            Vector3 newAgentPosition = new Vector3(obstacle.x, obstacle.y, obstacle.z);
 
-                if (!started_b)
-                {   // si es la primera vez que se ejecuta
-                    prevPositions[obstacle.id] = newAgentPosition;
-                    //guarda referencia al agente nuevo en la posicion inicial 
-                    agents[obstacle.id] = Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
-                }
-                else
-                {   // no es la 1ª vez
-                    Vector3 currentPosition = new Vector3();
-                    if (currPositions.TryGetValue(obstacle.id, out currentPosition))
-                        prevPositions[obstacle.id] = currentPosition;
-                    currPositions[obstacle.id] = newAgentPosition;
-                }
-            }
-            update_b = true;
-            if (!started_b) started_b = true;
-        }
-    }
+    //            if (!started_b)
+    //            {   // si es la primera vez que se ejecuta
+    //                prevPositions[obstacle.id] = newAgentPosition;
+    //                //guarda referencia al agente nuevo en la posicion inicial 
+    //                agents[obstacle.id] = Instantiate(obstaclePrefab, new Vector3(obstacle.x, obstacle.y, obstacle.z), Quaternion.identity);
+    //            }
+    //            else
+    //            {   // no es la 1ª vez
+    //                Vector3 currentPosition = new Vector3();
+    //                if (currPositions.TryGetValue(obstacle.id, out currentPosition))
+    //                    prevPositions[obstacle.id] = currentPosition;
+    //                currPositions[obstacle.id] = newAgentPosition;
+    //            }
+    //        }
+    //        update_b = true;
+    //        if (!started_b) started_b = true;
+    //    }
+    //}
 }
 
 
