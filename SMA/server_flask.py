@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from model import *
-from agent import *
+from agent_shortest_path import *
 
 # Size of the board:
 NUMBER_OF_CARS = 5

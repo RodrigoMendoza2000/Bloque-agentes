@@ -125,52 +125,6 @@ class Car(Agent):
                 return True
         return False
 
-    def get_current_road_direction(self):
-        """
-        Get the current direction of the cell the agent is in
-        """
-        for agent in self.model.grid.get_cell_list_contents([self.pos]):
-            if isinstance(agent, Road):
-                return agent.direction
-        return None
-
-    def next_step_based_on_direction(self, stuck=False):
-        """
-        Returns the next step based on the direction the agent is facing if not standing on road,
-        else get the next step based on the direction of the road
-        """
-        direction = self.get_current_road_direction()
-        # print(f"\nAgente: {self.unique_id} direction {direction}")
-        # For when the car is on a road that has a traffic light
-        if direction is None and self.direction is not None:
-            if self.direction == "Down":
-                return (self.pos[0], self.pos[1] - 1)
-            # Up
-            elif self.direction == "Up":
-                return (self.pos[0], self.pos[1] + 1)
-            # Left
-            elif self.direction == "Left":
-                return (self.pos[0] - 1, self.pos[1])
-            # Right
-            elif self.direction == "Right":
-                return (self.pos[0] + 1, self.pos[1])
-        else:
-            if stuck:
-                direction = self.get_road_direction_if_stuck()
-                
-            # Down
-            if direction == "Down":
-                return (self.pos[0], self.pos[1] - 1)
-            # Up
-            elif direction == "Up":
-                return (self.pos[0], self.pos[1] + 1)
-            # Left
-            elif direction == "Left":
-                return (self.pos[0] - 1, self.pos[1])
-            # Right
-            elif direction == "Right":
-                return (self.pos[0] + 1, self.pos[1])
-
 
     def next_step_based_on_direction_self(self):
         """
@@ -216,6 +170,29 @@ class Car(Agent):
                     else:
                         return False
                 return True
+        return False
+
+
+    def has_next_step_agent(self, next_step, agent_type):
+        """
+        Checks if the next step has an agent of the type specified
+        """
+        next_self_content = self.model.grid.get_cell_list_contents([next_step])
+        next_self_content = [type(agent).__name__ for agent in next_self_content]
+        if agent_type in next_self_content:
+            return True
+        return False 
+
+    def standing_on_light(self):
+        """
+        Checks if the agent is standing on a traffic light
+        """
+        # state: False = red, True = green
+        cell_content = self.model.grid.get_cell_list_contents([self.pos])
+        for agent in cell_content:
+            if isinstance(agent, Traffic_Light):
+                if agent.state:
+                    return True
         return False
     
 
