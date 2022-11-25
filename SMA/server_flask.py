@@ -38,12 +38,16 @@ def getAgents():
             z = i[2]
             for a in agents:
                 if isinstance(a, Car):
+                    destination = []
+                    if a.final_destination:
+                        destination = list(a.final_destination)
+
                     agentsPositions.append(
                         {"id": str(a.unique_id),
                          "x": x,
                          "y": 0,
                          "z": z,
-                         "visible": a.must_be_assigned_destination})
+                         "destination": destination})
 
         return jsonify({"agents": agentsPositions})
 

@@ -2,6 +2,7 @@ from mesa import Agent
 import random
 from shortespath import DijkstraCoordinate, simCity, nodo_coordenada
 
+
 class Car(Agent):
     """
     Agent that moves randomly.
@@ -9,6 +10,7 @@ class Car(Agent):
         unique_id: Agent's ID 
         direction: Randomly chosen direction chosen from one of eight directions
     """
+
     def __init__(self, unique_id, model):
         """
         Creates a new random agent.
@@ -28,7 +30,6 @@ class Car(Agent):
         self.parking = False
         # From which destination the car came from
         self.from_destination = None
-        
 
     def move(self):
         """ 
@@ -36,7 +37,6 @@ class Car(Agent):
         """
         # print(f"Agente: {self.unique_id} movimiento {self.direction}, final destination {self.final_destination}, is parking {self.parking}")
         #print(f"Agente: {self.unique_id} direction {self.direction}")
-        
 
         # If the car is not present on the road and must be assigned a destination
         if self.must_be_assigned_destination:
@@ -44,7 +44,8 @@ class Car(Agent):
             # Safety counter in case there is no available position
             safety_counter = 0
             while self.has_next_step_agent(random_destination, "Car") and safety_counter < 100:
-                random_destination = random.choice(self.model.destination_entrance)
+                random_destination = random.choice(
+                    self.model.destination_entrance)
                 self.from_destination = random_destination
                 safety_counter += 1
                 # print(self.has_next_step_agent(random_destination, "Car"))
@@ -52,21 +53,24 @@ class Car(Agent):
                 self.model.grid.place_agent(self, random_destination)
                 self.must_be_assigned_destination = False
                 self.from_destination = random_destination
-                
-                return 
+
+                return
             # If there is no available destination in 100 iterations, wait
             else:
                 return
 
         if self.final_destination is None:
-            self.final_destination = random.choice(self.model.destination_positions)
+            self.final_destination = random.choice(
+                self.model.destination_positions)
             while self.final_destination == self.from_destination:
-                self.final_destination = random.choice(self.model.destination_positions)
+                self.final_destination = random.choice(
+                    self.model.destination_positions)
 
-            dijkstraCity = DijkstraCoordinate(graph=simCity, start_coordinate=self.from_destination)
+            dijkstraCity = DijkstraCoordinate(
+                graph=simCity, start_coordinate=self.from_destination)
             dijkstraCity.dijkstra()
-            self.path = dijkstraCity.shortest_path_coordinates(self.final_destination)
-        
+            self.path = dijkstraCity.shortest_path_coordinates(
+                self.final_destination)
 
         if self.pos == self.path[0]:
             self.path.pop(0)
@@ -82,7 +86,7 @@ class Car(Agent):
             self.parking = False
             self.from_destination = None
             return
-        
+
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             self.set_turn_conditional("Down")
             self.direction = "Down"
@@ -109,9 +113,6 @@ class Car(Agent):
                 self.model.grid.move_agent(self, next_step)
 
         # print(f"Agente: {self.unique_id} is turning {self.turning}")
-            
-
-        
 
     def step(self):
         """ 
@@ -129,13 +130,12 @@ class Car(Agent):
                 return True
         return False
 
-
     def next_step_based_on_direction_self(self):
         """
         Get the next step based on the direction the agent is facing
         """
         if self.direction == "Down":
-                return (self.pos[0], self.pos[1] - 1)
+            return (self.pos[0], self.pos[1] - 1)
         # Up
         elif self.direction == "Up":
             return (self.pos[0], self.pos[1] + 1)
@@ -149,7 +149,7 @@ class Car(Agent):
     def is_position_valid(self, position):
         """
         Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
-        """ 
+        """
         if not self.model.grid.out_of_bounds(position):
             cell_content = self.model.grid.get_cell_list_contents([position])
             if len(cell_content) == 1 and (isinstance(cell_content[0], Road) or isinstance(cell_content[0], Traffic_Light)):
@@ -164,7 +164,7 @@ class Car(Agent):
     def is_position_valid_for_parking(self, position):
         """
         Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
-        """ 
+        """
         if not self.model.grid.out_of_bounds(position):
             cell_content = self.model.grid.get_cell_list_contents([position])
             if len(cell_content) == 1 and (isinstance(cell_content[0], Road) or isinstance(cell_content[0], Traffic_Light)) or isinstance(cell_content[0], Destination):
@@ -176,16 +176,16 @@ class Car(Agent):
                 return True
         return False
 
-
     def has_next_step_agent(self, next_step, agent_type):
         """
         Checks if the next step has an agent of the type specified
         """
         next_self_content = self.model.grid.get_cell_list_contents([next_step])
-        next_self_content = [type(agent).__name__ for agent in next_self_content]
+        next_self_content = [
+            type(agent).__name__ for agent in next_self_content]
         if agent_type in next_self_content:
             return True
-        return False 
+        return False
 
     def standing_on_light(self):
         """
@@ -204,17 +204,17 @@ class Car(Agent):
         Changes between turning and not turning based on the next direction
         """
         if self.direction != next_direction:
-                self.turning = True
+            self.turning = True
         else:
             self.turning = False
-    
 
 
 class Traffic_Light(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, state = False, timeToChange = 10):
+
+    def __init__(self, unique_id, model, state=False, timeToChange=10):
         super().__init__(unique_id, model)
         self.state = state
         self.timeToChange = timeToChange
@@ -251,10 +251,9 @@ class Traffic_Light(Agent):
             self.partner.state = True
             for agent in self.opposing_traffic_lights:
                 agent.state = False
-        
+
         elif self.total_cars == self.get_opposing_traffic_lights_cars():
             pass
-
 
     def get_opposing_traffic_lights(self):
         opposing_traffic_lights = []
@@ -299,11 +298,12 @@ class Traffic_Light(Agent):
                 next_step = (self.pos[0] + x, self.pos[1])
             elif self.direction == "Right":
                 next_step = (self.pos[0] - x, self.pos[1])
-                
+
             if self.model.grid.out_of_bounds(next_step):
                 number_cars += 0
             else:
-                cell_content = self.model.grid.get_cell_list_contents([next_step])
+                cell_content = self.model.grid.get_cell_list_contents([
+                                                                      next_step])
                 for agent in cell_content:
                     if isinstance(agent, Car):
                         number_cars += 1
@@ -314,9 +314,9 @@ class Traffic_Light(Agent):
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Road):
                 if (partner_direction in ("Up", "Down")) and (agent.direction in ("Left", "Right")):
-                        return agent.direction
+                    return agent.direction
                 elif (partner_direction in ("Left", "Right")) and (agent.direction in ("Up", "Down")):
-                        return agent.direction
+                    return agent.direction
         return None
 
     def get_partner_position(self):
@@ -334,36 +334,43 @@ class Traffic_Light(Agent):
         elif self.pos[1] - partner_pos[1] < 0:
             return "Up"
 
+
 class Destination(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
+
 
 class Obstacle(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
 
+
 class Road(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, direction= "Left"):
+
+    def __init__(self, unique_id, model, direction="Left"):
         super().__init__(unique_id, model)
         self.direction = direction
 
     def step(self):
         pass
+
 
 class Sidewalk(Agent):
     """
@@ -375,21 +382,25 @@ class Sidewalk(Agent):
 
     def step(self):
         pass
-    
+
+
 class Brush(Agent):
     """
     Brush agent for obstacles
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
-    
+
+
 class Busdestination(Agent):
     """
     Destination agent for busses destination
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
@@ -452,6 +463,7 @@ class Person(Agent):
     """
     Person agent
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.initial_direction = random.choice(["Left", "Right"])
