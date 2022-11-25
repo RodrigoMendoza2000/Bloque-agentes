@@ -60,11 +60,8 @@
     <Compile Include="Assets/FINALLLLLL/scripts/AgentController.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets/WorldMaterialsFree/Shaders/WorldMatHDRPFree.shader" />
-    <None Include="Assets/WorldMaterialsFree/Shaders/WorldMatLiteFree.shader" />
-    <None Include="Assets/WorldMaterialsFree/Shaders/WorldMatFree.shader" />
     <None Include="Assets/FINALLLLLL/Data/2022_base.txt" />
-    <None Include="Assets/WorldMaterialsFree/Shaders/WorldMatURPFree.shader" />
+    <None Include="Assets/POLYGON city pack/Read_me.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
