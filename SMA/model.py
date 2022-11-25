@@ -68,10 +68,14 @@ class RandomModel(Model):
             self.schedule.add(agent)
 
         for i in range(25):
-            agent = Person(f"person{i}", self)
+            agent = Person(f"p{i}", self)
             random_sidewalk = random.choice(self.sidewalk_positions)
             self.grid.place_agent(agent, random_sidewalk)
             self.schedule.add(agent)
+
+        agent = Bus(f"b1", self)
+        self.schedule.add(agent)
+        self.grid.place_agent(agent, (22,24))
 
         # eliminate two destinations from final destinations and add them to entrance destinations
         self.destination_entrance.append((0,0))

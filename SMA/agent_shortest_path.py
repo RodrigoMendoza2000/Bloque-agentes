@@ -369,8 +369,9 @@ class Sidewalk(Agent):
     """
     Sidewalk agent for the people to be in
     """
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, direction = "Left"):
         super().__init__(unique_id, model)
+        self.direction = direction
 
     def step(self):
         pass
@@ -387,13 +388,65 @@ class Brush(Agent):
     
 class Busdestination(Agent):
     """
-    Destination agent for busses
+    Destination agent for busses destination
     """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
     def step(self):
         pass
+
+class Bus(Car):
+    """
+    Destination agent for busses
+    """
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.path = [(22,24), (13,24), (13,17), (1,17), (1,8), (14,8), (14,1), (22,1), (22,24)]
+        self.people_inside = []
+
+    def step(self):
+        if self.pos == self.path[0]:
+            self.path.pop(0)
+
+        if len(self.path) == 0:
+            self.path = [(22,24), (13,24), (13,17), (1,17), (1,8), (14,8), (14,1), (22,1), (22,24)]
+        
+        if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
+            self.set_turn_conditional("Down")
+            self.direction = "Down"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
+        elif self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] < 0:
+            self.set_turn_conditional("Up")
+            self.direction = "Up"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
+        elif self.pos[0] - self.path[0][0] > 0 and self.pos[1] == self.path[0][1]:
+            self.set_turn_conditional("Left")
+            self.direction = "Left"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
+        elif self.pos[0] - self.path[0][0] < 0 and self.pos[1] == self.path[0][1]:
+            self.set_turn_conditional("Right")
+            self.direction = "Right"
+            next_step = self.next_step_based_on_direction_self()
+            if self.is_position_valid_for_parking(next_step):
+                self.model.grid.move_agent(self, next_step)
+
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Person):
+                if agent.waiting_for_bus:
+                    self.people_inside.append(agent)
+                    agent.waiting_for_bus = False
+                    agent.in_bus = True
+                    agent.bus = self
+
+        for agent in self.people_inside:
+            agent.model.grid.move_agent(agent, self.pos)
     
 class Person(Agent):
     """
@@ -401,7 +454,107 @@ class Person(Agent):
     """
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.initial_direction = random.choice(["Left", "Right"])
+        self.direction = self.initial_direction
+        self.in_bus = False
+        self.waiting_for_bus = False
+        self.bus = None
+
 
     def step(self):
-        pass
+
+        if not self.in_bus and "Busdestination" in self.get_cell_class_names(self.pos):
+            decision_bus_stop = random.choice([0 for _ in range(9)] + [1])
+            if decision_bus_stop == 1:
+                self.waiting_for_bus = True
+
+        if self.waiting_for_bus:
+            return
+
+        if self.in_bus:
+            for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+                if isinstance(agent, Busdestination):
+                    decision_bus_stop = random.choice([0 for _ in range(2)] + [1])
+                    if decision_bus_stop == 1:
+                        self.waiting_for_bus = False
+                        self.in_bus = False
+                        self.model.grid.move_agent(self, agent.pos)
+                        self.bus.people_inside.remove(self)
+                        self.bus = None
+                        self.direction = self.initial_direction
+                        return
+            return
+
+        next_position = self.next_step_based_on_direction(self.direction)
+        if self.is_valid_position(next_position):
+            self.model.grid.move_agent(self, next_position)
+        else:
+            self.direction = self.next_direction(self.direction, self.initial_direction)
+            next_position = self.next_step_based_on_direction(self.direction)
+            while not self.is_valid_position(next_position):
+                self.direction = self.next_direction(self.direction, self.initial_direction)
+                next_position = self.next_step_based_on_direction(self.direction)
+            self.model.grid.move_agent(self, next_position)
+
+    def is_valid_position(self, position):
+        """
+        Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
+        """ 
+        if not self.model.grid.out_of_bounds(position):
+            cell_content = self.get_cell_class_names(position)
+            if "Road" in cell_content or "Traffic_Light" in cell_content or "Obstacle" in cell_content:
+                return False
+            else:
+                return True
+            
+        return False
+
+    def get_cell_class_names(self, position):
+        """
+        Gets the class name of the cell
+        """
+        cell_content = self.model.grid.get_cell_list_contents([position])
+        return [type(agent).__name__ for agent in cell_content]
+
+    def next_step_based_on_direction(self, direction):
+        """
+        Gets the next step based on the direction
+        """
+        if direction == "Up":
+            return (self.pos[0], self.pos[1] + 1)
+        elif direction == "Down":
+            return (self.pos[0], self.pos[1] - 1)
+        elif direction == "Left":
+            return (self.pos[0] - 1, self.pos[1])
+        elif direction == "Right":
+            return (self.pos[0] + 1, self.pos[1])
+        else:
+            return None
+
+    def next_direction(self, direction, initial_direction):
+        """
+        Gets the next direction of the person
+        """
+        if direction == "Up":
+            if initial_direction == "Left":
+                return "Left"
+            elif initial_direction == "Right":
+                return "Right"
+        elif direction == "Down":
+            if initial_direction == "Left":
+                return "Right"
+            elif initial_direction == "Right":
+                return "Left"
+        elif direction == "Left":
+            if initial_direction == "Left":
+                return "Down"
+            elif initial_direction == "Right":
+                return "Up"
+        elif direction == "Right":
+            if initial_direction == "Left":
+                return "Up"
+            elif initial_direction == "Right":
+                return "Down"
+        else:
+            return None
 
