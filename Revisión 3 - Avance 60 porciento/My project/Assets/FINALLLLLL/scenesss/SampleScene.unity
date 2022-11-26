@@ -332,10 +332,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   layout: {fileID: 4900000, guid: 85585f0f4fac72e4c8b405d3797fb841, type: 3}
-  roadPrefab: {fileID: 3037697594974969170, guid: 6fd0712a5884bc94db0c5b0164bff477, type: 3}
+  roadPrefab: {fileID: 1256093442512822, guid: adb55fed5a5012b458c398a0b618390c, type: 3}
   buildingPrefab: {fileID: 7231505057231702167, guid: 60813a2d4a1e65e42b9f23b66042ff6b, type: 3}
   semaphorePrefab: {fileID: 188564017111809152, guid: ff94904d5baa2134c8f05739ac339cfe, type: 3}
-  sidewalkPrefab: {fileID: 3126862190313750571, guid: cfe32f9be96457b4abe46c9614597b2c, type: 3}
+  sidewalkPrefab: {fileID: 1590873232276242, guid: f24cfa7ea7c5c764dad9dddadf04cde2, type: 3}
   tileSize: 1
 --- !u!4 &1775753517
 Transform:
