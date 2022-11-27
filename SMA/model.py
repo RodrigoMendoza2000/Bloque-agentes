@@ -64,7 +64,7 @@ class RandomModel(Model):
 
         self.num_agents = N
         for i in range(self.num_agents):
-            agent = Car(10000 + i, self)
+            agent = Car(f"c{i}", self)
             self.schedule.add(agent)
 
         for i in range(25):
@@ -75,16 +75,16 @@ class RandomModel(Model):
 
         agent = Bus(f"b1", self)
         self.schedule.add(agent)
-        self.grid.place_agent(agent, (22,24))
+        self.grid.place_agent(agent, (22, 24))
 
         # eliminate two destinations from final destinations and add them to entrance destinations
-        self.destination_entrance.append((0,0))
+        self.destination_entrance.append((0, 0))
         # self.destination_entrance.append((0,1))
-        self.destination_entrance.append((0,24))
+        self.destination_entrance.append((0, 24))
         # self.destination_entrance.append((1,24))
-        self.destination_entrance.append((23,24))
+        self.destination_entrance.append((23, 24))
         # self.destination_entrance.append((23,23))
-        self.destination_entrance.append((23,0))
+        self.destination_entrance.append((23, 0))
         # self.destination_entrance.append((22,0))
         """self.destination_entrance.append((3,22))
         self.destination_entrance.append((19,2))
