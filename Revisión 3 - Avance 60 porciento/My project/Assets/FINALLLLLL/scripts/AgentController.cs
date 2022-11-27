@@ -27,8 +27,9 @@ public class CarData
 public class PersonData
 {
     public float x, y, z;
-    public Vector3 offset = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), 0, UnityEngine.Random.Range(-0.4f, 0.4f));
+    public Vector3 offset = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), 0, UnityEngine.Random.Range(-0.35f, 0.35f));
     public bool inBus;
+    public int showInBus = 1;
 
     public PersonData(float x = 0, float y = 0, float z = 0, bool inBus = false)
     {
@@ -112,7 +113,20 @@ public class AgentsData
             dict[agent.id].x = agent.x;
             dict[agent.id].y = agent.y;
             dict[agent.id].z = agent.z;
-            dict[agent.id].inBus = agent.inBus;
+            if (agent.inBus && dict[agent.id].showInBus > 0)
+            {
+                dict[agent.id].inBus = false;
+                dict[agent.id].showInBus -= 1;
+            }
+            else if (!agent.inBus)
+            {
+                dict[agent.id].showInBus = 1;
+                dict[agent.id].inBus = agent.inBus;
+            }
+            else
+            {
+                dict[agent.id].inBus = agent.inBus;
+            }
         }
     }
 }
@@ -212,6 +226,15 @@ public class AgentController : MonoBehaviour
                     {
                         agentsObject[agent.Key].SetActive(false);
                     }
+
+                    if (carsDict[agent.Key].turning)
+                    {
+                        agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
+                    } 
+                    else
+                    {
+                        agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(0, 0, 255);
+                    }
                 }
 
                 Vector3 currentPosition = agent.Value;
@@ -225,13 +248,22 @@ public class AgentController : MonoBehaviour
                 if (agent.Key[0] == 'p')
                 {
                     agentsObject[agent.Key].transform.localPosition = interpolated + peopleDict[agent.Key].offset;
+                    if (peopleDict[agent.Key].inBus)
+                    {
+                        agentsObject[agent.Key].SetActive(false);
+                    }
+                    else
+                    {
+                        agentsObject[agent.Key].SetActive(true);
+                    }
+
                 }
                 else
                 {
                     agentsObject[agent.Key].transform.localPosition = interpolated;
                 }
 
-                if (agent.Key[0] == 'c' || agent.Key[0] == 'b')
+                if (agent.Key[0] == 'c' || agent.Key[0] == 'b' || agent.Key[0] == 'p')
                 {
                     if (direction != Vector3.zero) agentsObject[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
                 }

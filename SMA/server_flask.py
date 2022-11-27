@@ -50,7 +50,8 @@ def getAgents():
                          "y": 0,
                          "z": z,
                          "destination": destination,
-                         "parking": a.parking})
+                         "parking": a.parking,
+                         "turning": a.turning})
 
                 if type(a) == Bus:
                     busData = {

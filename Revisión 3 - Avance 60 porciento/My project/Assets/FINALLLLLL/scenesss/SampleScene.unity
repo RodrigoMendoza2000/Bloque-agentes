@@ -367,6 +367,6 @@ MonoBehaviour:
   carPrefab: {fileID: 5916911610596544322, guid: 4d81cddf989ca984f98654dda1461d63, type: 3}
   busPrefab: {fileID: 1412253146675489813, guid: f3084976eeabc5341a2f8e5d84f627f5, type: 3}
   personPrefab: {fileID: 178988314260181609, guid: ef491fe523d379840a1e18f9ad197ac3, type: 3}
-  N: 10
+  N: 3
   max_steps: 5000
-  timeToUpdate: 0.2
+  timeToUpdate: 0.5
