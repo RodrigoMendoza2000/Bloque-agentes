@@ -24,7 +24,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 13040
+  controlID: 71
 --- !u!114 &2
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 13041
+  controlID: 72
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -166,7 +166,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 12990
+  controlID: 28
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -224,9 +224,9 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: 5e080000
       m_LastClickedID: 0
-      m_ExpandedIDs: 86e4faff32fbffff
+      m_ExpandedIDs: 1cfbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -536,9 +536,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 12.362754, y: -3.364503, z: 8.555824}
+    m_Target: {x: 12.048945, y: -6.3375444, z: 5.3348446}
     speed: 2
-    m_Value: {x: 12.362754, y: -3.364503, z: 8.555824}
+    m_Value: {x: 12.048945, y: -6.3375444, z: 5.3348446}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -587,11 +587,11 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: 0.38759097, y: 0.16564378, z: -0.07104484, w: 0.9041188}
     speed: 2
-    m_Value: {x: 0.38745636, y: 0.16698787, z: -0.071621045, w: 0.90380484}
+    m_Value: {x: 0.38756335, y: 0.16563198, z: -0.07103977, w: 0.90405434}
   m_Size:
-    m_Target: 9.880612
+    m_Target: 6.836138
     speed: 2
-    m_Value: 9.880612
+    m_Value: 6.836138
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -758,13 +758,13 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/FINALLLLLL/Prefab
+    - Assets/FINALLLLLL/scripts
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/FINALLLLLL/Prefab
+  - Assets/FINALLLLLL/scripts
   m_LastFoldersGridSize: -1
   m_LastProjectPath: "C:\\Users\\aovie\\Documents\\GitHub\\Bloque-agentes\\Revisi\xF3n
     3 - Avance 60 porciento\\My project"
@@ -772,9 +772,9 @@ MonoBehaviour:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 2.2000122}
-    m_SelectedIDs: 1a6a0000
-    m_LastClickedID: 27162
-    m_ExpandedIDs: 000000009c6800009e68000000ca9a3b
+    m_SelectedIDs: 6c6a0000
+    m_LastClickedID: 27244
+    m_ExpandedIDs: 00000000ea680000ec68000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -802,7 +802,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000009c6800009e68000000ca9a3b
+    m_ExpandedIDs: 00000000ea680000ec680000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -827,9 +827,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 
-    m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_SelectedInstanceIDs: 5e080000
+    m_LastClickedInstanceID: 2142
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -913,7 +913,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 200}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 13000
+  controlID: 36
 --- !u!114 &15
 MonoBehaviour:
   m_ObjectHideFlags: 52
