@@ -72,15 +72,11 @@ class Car(Agent):
             self.path = dijkstraCity.shortest_path_coordinates(
                 self.final_destination)
 
-
-        
-                
         if self.pos == self.path[0]:
             self.path.pop(0)
 
-        
-
-        
+        if self.parking and len(self.path) > 0:
+            self.parking = False
 
         if len(self.path) == 0:
             self.model.grid.remove_agent(self)
@@ -90,30 +86,30 @@ class Car(Agent):
             self.on_road = False
             self.must_be_assigned_destination = True
             self.final_destination = None
-            self.parking = False
+            self.parking = True
             self.from_destination = None
             return
 
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
-            #self.set_turn_conditional("Down")
+            # self.set_turn_conditional("Down")
             self.direction = "Down"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] < 0:
-            #self.set_turn_conditional("Up")
+            # self.set_turn_conditional("Up")
             self.direction = "Up"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] > 0 and self.pos[1] == self.path[0][1]:
-            #self.set_turn_conditional("Left")
+            # self.set_turn_conditional("Left")
             self.direction = "Left"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] < 0 and self.pos[1] == self.path[0][1]:
-            #self.set_turn_conditional("Right")
+            # self.set_turn_conditional("Right")
             self.direction = "Right"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
@@ -128,11 +124,9 @@ class Car(Agent):
                 self.set_turn_conditional("Left")
             elif self.pos[0] - self.path[1][0] < 0 and self.pos[1] == self.path[1][1]:
                 self.set_turn_conditional("Right")
-        
 
-        
-
-        print(f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
+        print(
+            f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
 
     def step(self):
         """ 
@@ -396,7 +390,8 @@ class Sidewalk(Agent):
     """
     Sidewalk agent for the people to be in
     """
-    def __init__(self, unique_id, model, direction = "Left"):
+
+    def __init__(self, unique_id, model, direction="Left"):
         super().__init__(unique_id, model)
         self.direction = direction
 
@@ -427,13 +422,16 @@ class Busdestination(Agent):
     def step(self):
         pass
 
+
 class Bus(Car):
     """
     Destination agent for busses
     """
+
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
-        self.path = [(22,24), (13,24), (13,17), (1,17), (1,8), (14,8), (14,1), (22,1), (22,24)]
+        self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
+                     (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
         self.people_inside = []
 
     def step(self):
@@ -441,8 +439,9 @@ class Bus(Car):
             self.path.pop(0)
 
         if len(self.path) == 0:
-            self.path = [(22,24), (13,24), (13,17), (1,17), (1,8), (14,8), (14,1), (22,1), (22,24)]
-        
+            self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
+                         (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
+
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             self.set_turn_conditional("Down")
             self.direction = "Down"
@@ -478,7 +477,8 @@ class Bus(Car):
 
         for agent in self.people_inside:
             agent.model.grid.move_agent(agent, self.pos)
-    
+
+
 class Person(Agent):
     """
     Person agent
@@ -491,7 +491,6 @@ class Person(Agent):
         self.in_bus = False
         self.waiting_for_bus = False
         self.bus = None
-
 
     def step(self):
 
@@ -506,7 +505,8 @@ class Person(Agent):
         if self.in_bus:
             for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
                 if isinstance(agent, Busdestination):
-                    decision_bus_stop = random.choice([0 for _ in range(2)] + [1])
+                    decision_bus_stop = random.choice(
+                        [0 for _ in range(2)] + [1])
                     if decision_bus_stop == 1:
                         self.waiting_for_bus = False
                         self.in_bus = False
@@ -521,24 +521,27 @@ class Person(Agent):
         if self.is_valid_position(next_position):
             self.model.grid.move_agent(self, next_position)
         else:
-            self.direction = self.next_direction(self.direction, self.initial_direction)
+            self.direction = self.next_direction(
+                self.direction, self.initial_direction)
             next_position = self.next_step_based_on_direction(self.direction)
             while not self.is_valid_position(next_position):
-                self.direction = self.next_direction(self.direction, self.initial_direction)
-                next_position = self.next_step_based_on_direction(self.direction)
+                self.direction = self.next_direction(
+                    self.direction, self.initial_direction)
+                next_position = self.next_step_based_on_direction(
+                    self.direction)
             self.model.grid.move_agent(self, next_position)
 
     def is_valid_position(self, position):
         """
         Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
-        """ 
+        """
         if not self.model.grid.out_of_bounds(position):
             cell_content = self.get_cell_class_names(position)
             if "Road" in cell_content or "Traffic_Light" in cell_content or "Obstacle" in cell_content:
                 return False
             else:
                 return True
-            
+
         return False
 
     def get_cell_class_names(self, position):
@@ -589,4 +592,3 @@ class Person(Agent):
                 return "Down"
         else:
             return None
-
