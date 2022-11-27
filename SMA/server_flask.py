@@ -47,7 +47,7 @@ def getAgents():
                     carsData.append(
                         {"id": str(a.unique_id),
                          "x": x,
-                         "y": 0,
+                         "y": 0.1,
                          "z": z,
                          "destination": destination,
                          "parking": a.parking,
