@@ -72,8 +72,15 @@ class Car(Agent):
             self.path = dijkstraCity.shortest_path_coordinates(
                 self.final_destination)
 
+
+        
+                
         if self.pos == self.path[0]:
             self.path.pop(0)
+
+        
+
+        
 
         if len(self.path) == 0:
             self.model.grid.remove_agent(self)
@@ -88,31 +95,44 @@ class Car(Agent):
             return
 
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
-            self.set_turn_conditional("Down")
+            #self.set_turn_conditional("Down")
             self.direction = "Down"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] < 0:
-            self.set_turn_conditional("Up")
+            #self.set_turn_conditional("Up")
             self.direction = "Up"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] > 0 and self.pos[1] == self.path[0][1]:
-            self.set_turn_conditional("Left")
+            #self.set_turn_conditional("Left")
             self.direction = "Left"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
         elif self.pos[0] - self.path[0][0] < 0 and self.pos[1] == self.path[0][1]:
-            self.set_turn_conditional("Right")
+            #self.set_turn_conditional("Right")
             self.direction = "Right"
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
 
-        # print(f"Agente: {self.unique_id} is turning {self.turning}")
+        if len(self.path) > 1:
+            if self.pos[0] == self.path[1][0] and self.pos[1] - self.path[1][1] > 0:
+                self.set_turn_conditional("Down")
+            elif self.pos[0] == self.path[1][0] and self.pos[1] - self.path[1][1] < 0:
+                self.set_turn_conditional("Up")
+            elif self.pos[0] - self.path[1][0] > 0 and self.pos[1] == self.path[1][1]:
+                self.set_turn_conditional("Left")
+            elif self.pos[0] - self.path[1][0] < 0 and self.pos[1] == self.path[1][1]:
+                self.set_turn_conditional("Right")
+        
+
+        
+
+        print(f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
 
     def step(self):
         """ 
@@ -203,7 +223,7 @@ class Car(Agent):
         """
         Changes between turning and not turning based on the next direction
         """
-        if self.direction != next_direction:
+        if self.direction != next_direction and self.direction is not None:
             self.turning = True
         else:
             self.turning = False
