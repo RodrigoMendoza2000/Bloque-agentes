@@ -79,12 +79,12 @@ public class MakeCity : MonoBehaviour
             }
             else if (tiles[i] == '#')
             {
-                float yscale = Random.Range(0.5f, 2.0f);
-                position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(buildingPrefab, position, Quaternion.identity);
-                tile.transform.localScale = new Vector3(1, yscale, 1);
-                tile.transform.parent = transform;
-                tile.transform.position += new Vector3(0, yscale / 2, 0);
+                //float yscale = Random.Range(0.5f, 2.0f);
+                //position = new Vector3(x * tileSize, 0, y * tileSize);
+                //tile = Instantiate(buildingPrefab, position, Quaternion.identity);
+                //tile.transform.localScale = new Vector3(1, yscale, 1);
+                //tile.transform.parent = transform;
+                //tile.transform.position += new Vector3(0, yscale / 2, 0);
                 x += 1;
             }
             else if (tiles[i] == '=')

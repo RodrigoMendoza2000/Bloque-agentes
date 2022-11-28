@@ -229,11 +229,11 @@ public class AgentController : MonoBehaviour
 
                     if (carsDict[agent.Key].turning)
                     {
-                        agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
+                        //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
                     } 
                     else
                     {
-                        agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(0, 0, 255);
+                        //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(0, 0, 255);
                     }
                 }
 
