@@ -31,48 +31,29 @@ def getAgents():
 
     if request.method == 'GET':
         # List comprehension
-        carsData = []
-        busData = {}
-        peopleData = []
+        agentsPositions = []
         for i in list(randomModel.grid.coord_iter()):
             agents = i[0]
             x = i[1]
             z = i[2]
             for a in agents:
-                if type(a) == Car:
+                if isinstance(a, Car):
                     destination = []
                     if a.final_destination:
                         destination = list(a.final_destination)
 
-                    carsData.append(
+                    agentsPositions.append(
                         {"id": str(a.unique_id),
                          "x": x,
                          "y": 0.1,
                          "z": z,
-                         "destination": destination,
-                         "parking": a.parking,
-                         "turning": a.turning})
+                         "destination": destination})
 
-                if type(a) == Bus:
-                    busData = {
-                        "id": str(a.unique_id),
-                        "x": x,
-                        "y": 0,
-                        "z": z}
-
-                if type(a) == Person:
-                    peopleData.append(
-                        {"id": str(a.unique_id),
-                         "x": x,
-                         "y": 0,
-                         "z": z,
-                         "inBus": a.in_bus})
-
-        return jsonify({"cars": carsData, "bus": busData, "people": peopleData})
+        return jsonify({"agents": agentsPositions})
 
 
 # Se encarga de hacerle el update al modelo, puede ser muy tardado
-@ app.route('/update', methods=['GET'])
+@app.route('/update', methods=['GET'])
 def updateModel():
     global currentStep, randomModel
     if request.method == 'GET':
