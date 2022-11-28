@@ -26502,9 +26502,9 @@ MonoBehaviour:
   carPrefab: {fileID: 7482775448255555431, guid: 250233b9b9c7847558862effcc4d2fbe, type: 3}
   busPrefab: {fileID: 1546457720962043483, guid: 6f13a974d0f34498d921ce58680b48d3, type: 3}
   personPrefab: {fileID: 178988314260181609, guid: ef491fe523d379840a1e18f9ad197ac3, type: 3}
-  N: 100
+  N: 15
   max_steps: 5000
-  timeToUpdate: 1
+  timeToUpdate: 0.2
 --- !u!1 &1778581069
 GameObject:
   m_ObjectHideFlags: 0
