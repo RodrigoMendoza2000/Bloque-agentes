@@ -434,6 +434,7 @@ class Bus(Car):
                      (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
         self.people_inside = []
         self.stopping = False
+        self.waiting_time = 0
 
     def step(self):
         
@@ -447,7 +448,10 @@ class Bus(Car):
         
             
         if self.stopping:
-            self.stopping = False
+            self.waiting_time += 1
+            if self.waiting_time == 2:
+                self.stopping = False
+                self.waiting_time = 0
             return
 
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
@@ -483,6 +487,7 @@ class Bus(Car):
                     agent.in_bus = True
                     agent.bus = self
                     self.stopping = True
+                    agent.original_destination = agent.pos
         
         for agent in self.people_inside:
             agent.model.grid.move_agent(agent, self.pos)
@@ -500,6 +505,7 @@ class Person(Agent):
         self.in_bus = False
         self.waiting_for_bus = False
         self.bus = None
+        self.original_destination = None
 
     def step(self):
 
@@ -513,7 +519,7 @@ class Person(Agent):
 
         if self.in_bus:
             for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
-                if isinstance(agent, Busdestination):
+                if isinstance(agent, Busdestination) and agent.pos != self.original_destination:
                     decision_bus_stop = random.choice(
                         [0 for _ in range(2)] + [1])
                     if decision_bus_stop == 1:
