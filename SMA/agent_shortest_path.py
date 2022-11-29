@@ -433,14 +433,22 @@ class Bus(Car):
         self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
                      (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
         self.people_inside = []
+        self.stopping = False
 
     def step(self):
+        
         if self.pos == self.path[0]:
             self.path.pop(0)
 
         if len(self.path) == 0:
             self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
                          (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
+            
+        
+            
+        if self.stopping:
+            self.stopping = False
+            return
 
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             self.set_turn_conditional("Down")
@@ -466,7 +474,7 @@ class Bus(Car):
             next_step = self.next_step_based_on_direction_self()
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
-
+                
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Person):
                 if agent.waiting_for_bus:
@@ -474,7 +482,8 @@ class Bus(Car):
                     agent.waiting_for_bus = False
                     agent.in_bus = True
                     agent.bus = self
-
+                    self.stopping = True
+        
         for agent in self.people_inside:
             agent.model.grid.move_agent(agent, self.pos)
 
