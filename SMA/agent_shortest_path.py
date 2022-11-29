@@ -486,11 +486,14 @@ class Bus(Car):
                     agent.waiting_for_bus = False
                     agent.in_bus = True
                     agent.bus = self
-                    self.stopping = True
                     agent.original_destination = agent.pos
         
         for agent in self.people_inside:
             agent.model.grid.move_agent(agent, self.pos)
+            
+        for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
+            if isinstance(agent, Busdestination) and self.stopping == False:
+                self.stopping = True
 
 
 class Person(Agent):
