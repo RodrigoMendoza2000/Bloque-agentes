@@ -295,6 +295,12 @@ class Traffic_Light(Agent):
             pass
 
     def get_opposing_traffic_lights(self):
+        """
+        Gets the two traffic lights opposing self
+
+        Returns:
+            list: list with the two opposing traffic lights
+        """
         opposing_traffic_lights = []
         for agent in self.model.grid.iter_neighbors(self.pos, moore=True, radius=3):
             if isinstance(agent, Traffic_Light) and agent != self.partner:
@@ -302,32 +308,51 @@ class Traffic_Light(Agent):
         return opposing_traffic_lights
 
     def get_opposing_traffic_lights_cars(self):
+        """
+        Gets the number of cars following both traffic lights
+
+        Returns:
+            int: Sum of both traffic light cars
+        """
         opposing_traffic_lights_cars = 0
         for agent in self.opposing_traffic_lights:
             opposing_traffic_lights_cars += agent.current_cars
         return opposing_traffic_lights_cars
 
-    def get_id(self):
-        return self.unique_id
-
     def get_partner(self):
         """
-        Gets the partner of the traffic light
+        Gets the traffic light next to self
+
+        Returns:
+            Traffic_Light: agent instance of partner
         """
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Traffic_Light):
                 return agent
 
     def get_number_cars_from_partner(self):
+        """
+        Gets the number of cars of the traffic light next to self
+        
+        Returns:
+            int: number of cars following partner traffic light
+        """
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Traffic_Light):
                 return agent.current_cars
 
     def get_number_of_cars(self, number_positions):
         """
-        Gets the number of cars in the traffic light
+        Gets the number of cars following x positions of the traffic light
+
+        Args:
+            number_positions (int): The amount of cells to check
+
+        Returns:
+            int: number of cars
         """
         number_cars = 0
+        far_away_cars = number_positions
         for x in range(0, number_positions + 1):
             if self.direction == "Up":
                 next_step = (self.pos[0], self.pos[1] - x)
@@ -345,10 +370,17 @@ class Traffic_Light(Agent):
                                                                       next_step])
                 for agent in cell_content:
                     if isinstance(agent, Car):
-                        number_cars += 1
+                        number_cars += (1 * far_away_cars)
+            far_away_cars -= 1
         return number_cars
 
     def get_direction_of_cars(self):
+        """
+        Returns where the cars are coming from according to the direction of the road
+
+        Returns:
+            string: direction of the road where the cars are coming from (Up, Down, Left, Right)
+        """
         partner_direction = self.get_partner_position()
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Road):
@@ -359,6 +391,12 @@ class Traffic_Light(Agent):
         return None
 
     def get_partner_position(self):
+        """
+        Get if the partner is above, below, left or right of self
+
+        Returns:
+            string: direction of the partner (Up, Down, Left, Right)
+        """
         
         partner_pos = ()
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
