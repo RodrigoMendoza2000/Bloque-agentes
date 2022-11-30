@@ -279,7 +279,7 @@ class Traffic_Light(Agent):
             self.opposing_traffic_lights = self.get_opposing_traffic_lights()
 
         # Will get the number of cars that are in the next 3 positions
-        self.current_cars = self.get_number_of_cars(3)
+        self.current_cars = self.get_number_of_cars(7)
         # Get partner's and add it to self to get the total number of cars in that street
         self.total_cars = self.current_cars + self.get_number_cars_from_partner()
 
