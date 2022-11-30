@@ -380,6 +380,18 @@ class Car(Agent):
             return ["Up", "Down"]
         elif self.direction == "Right":
             return ["Up", "Down"]
+        
+    def standing_on_light(self):
+        """
+        
+        """
+        # state: False = red, True = green
+        cell_content = self.model.grid.get_cell_list_contents([self.pos])
+        for agent in cell_content:
+            if isinstance(agent, Traffic_Light):
+                if agent.state:
+                    return True
+        return False
 
     def detect_turns(self):
         """

@@ -19,27 +19,30 @@ class Car(Agent):
             model: Model reference for the agent
         """
         super().__init__(unique_id, model)
+        # Indicate if the agent is turning
         self.turning = False
+        # The current direction of the agent
         self.direction = None
+        # If the car is currently in a road or a destination
         self.on_road = False
         # If the car must be assigned a destionation to start on the road
         self.must_be_assigned_destination = True
         # The final destination where the car will park
         self.final_destination = None
-        # If the car is parking
+        # If the car is parking (reaching the destination)
         self.parking = False
-        # From which destination the car came from
+        # From which destination/position the car came from
         self.from_destination = None
 
     def move(self):
         """ 
         Determines if the agent can move in the direction that was chosen
         """
-        # print(f"Agente: {self.unique_id} movimiento {self.direction}, final destination {self.final_destination}, is parking {self.parking}")
-        #print(f"Agente: {self.unique_id} direction {self.direction}")
 
-        # If the car is not present on the road and must be assigned a destination
+        # If the car is not present on the road 
+        # and must be assigned a destination to start on the road
         if self.must_be_assigned_destination:
+            # The 4 destination entrances are the 4 edges of the map
             random_destination = random.choice(self.model.destination_entrance)
             # Safety counter in case there is no available position
             safety_counter = 0
@@ -48,36 +51,43 @@ class Car(Agent):
                     self.model.destination_entrance)
                 self.from_destination = random_destination
                 safety_counter += 1
-                # print(self.has_next_step_agent(random_destination, "Car"))
             if safety_counter < 100:
                 self.model.grid.place_agent(self, random_destination)
                 self.must_be_assigned_destination = False
                 self.from_destination = random_destination
-
                 return
-            # If there is no available destination in 100 iterations, wait
+            # If there is no available destination in 100 iterations, wait for the next step
             else:
                 return
 
+        # Assign the final destination where the agent needs to go
         if self.final_destination is None:
+            # Select a final destination from the list of destination agents
             self.final_destination = random.choice(
                 self.model.destination_positions)
+            # Final destination and origin destination cannot be the same
             while self.final_destination == self.from_destination:
                 self.final_destination = random.choice(
                     self.model.destination_positions)
 
+            # Apply the Dijkstra algorithm to find the shortest path to the final destination
             dijkstraCity = DijkstraCoordinate(
                 graph=simCity, start_coordinate=self.from_destination)
             dijkstraCity.dijkstra()
             self.path = dijkstraCity.shortest_path_coordinates(
                 self.final_destination)
 
+        # If the car is in the current coordinate of the ideal path, 
+        # pop it to go to the next coordinate
         if self.pos == self.path[0]:
             self.path.pop(0)
 
+        # If it is a new agent, set parking to False
         if self.parking and len(self.path) > 0:
             self.parking = False
 
+        # If the car has arrived to the final destination, remove the agent and reset instance variables
+        # to allow a new car to spawn
         if len(self.path) == 0:
             self.model.grid.remove_agent(self)
             # reset all the instance variables
@@ -90,9 +100,11 @@ class Car(Agent):
             self.from_destination = None
             return
         
-        
+        # All positions before the roundabout
         self.roundabout_coordinates = [(12,9), (12,8), (13,13), (14,13), (18,12), (18,11), (16,7),(17,7)]
 
+        # If it is on a position before entering the roundabout, check diagonally if there is any car,
+        # if there is, wait for the next step
         if self.pos in self.roundabout_coordinates:
             moore_roundabout = self.moore_roundabout()
             if self.is_position_valid_for_parking(moore_roundabout):
@@ -100,6 +112,7 @@ class Car(Agent):
             else:
                 return
             
+        # Go to position depending on the position of the node and self direction
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             # self.set_turn_conditional("Down")
             self.direction = "Down"
@@ -125,6 +138,7 @@ class Car(Agent):
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
 
+        # To make the turning variable True to allow a smoother transition in Unity
         if len(self.path) > 1:
             if self.pos[0] == self.path[1][0] and self.pos[1] - self.path[1][1] > 0:
                 self.set_turn_conditional("Down")
@@ -135,58 +149,37 @@ class Car(Agent):
             elif self.pos[0] - self.path[1][0] < 0 and self.pos[1] == self.path[1][1]:
                 self.set_turn_conditional("Right")
 
-        #print(f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
-
     def step(self):
-        """ 
-        Determines the new direction it will take, and then moves
-        """
-        # print(f"Agente: {self.unique_id} movimiento {self.direction}")
         self.move()
-
-    def is_road(self, cell):
-        """
-        If the cell is a road, returns True; otherwise, returns False
-        """
-        for agent in self.model.grid.get_cell_list_contents([cell]):
-            if isinstance(agent, Road):
-                return True
-        return False
 
     def next_step_based_on_direction_self(self):
         """
-        Get the next step based on the direction the agent is facing
+        Get the coordinates of where the agent must move
+        based on the direction the agent is facing
+
+        Returns:
+            tuple(int, int): The coordinates of the next step
         """
         if self.direction == "Down":
             return (self.pos[0], self.pos[1] - 1)
-        # Up
         elif self.direction == "Up":
             return (self.pos[0], self.pos[1] + 1)
-        # Left
         elif self.direction == "Left":
             return (self.pos[0] - 1, self.pos[1])
-        # Right
         elif self.direction == "Right":
             return (self.pos[0] + 1, self.pos[1])
 
-    def is_position_valid(self, position):
-        """
-        Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
-        """
-        if not self.model.grid.out_of_bounds(position):
-            cell_content = self.model.grid.get_cell_list_contents([position])
-            if len(cell_content) == 1 and (isinstance(cell_content[0], Road) or isinstance(cell_content[0], Traffic_Light)):
-                if isinstance(cell_content[0], Traffic_Light):
-                    if cell_content[0].state:
-                        return True
-                    else:
-                        return False
-                return True
-        return False
-
     def is_position_valid_for_parking(self, position):
         """
-        Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
+        Checks if the position given is valid by not being out of bounds, 
+        is a road or is a traffic light on green or it is a parking spot (destination)
+
+
+        Args:
+            position (tuple(int, int)): The coordinates of the position to check
+
+        Returns:
+            bool: True if the position is valid, False otherwise
         """
         if not self.model.grid.out_of_bounds(position):
             cell_content = self.model.grid.get_cell_list_contents([position])
@@ -202,6 +195,13 @@ class Car(Agent):
     def has_next_step_agent(self, next_step, agent_type):
         """
         Checks if the next step has an agent of the type specified
+
+        Args:
+            next_step (tuple(int, int)): the coordinates of where the agent will go next
+            agent_type (string): The name of the agent type to check for
+
+        Returns:
+            bool: returns True if the next step has an agent of the type specified, False otherwise
         """
         next_self_content = self.model.grid.get_cell_list_contents([next_step])
         next_self_content = [
@@ -210,21 +210,12 @@ class Car(Agent):
             return True
         return False
 
-    def standing_on_light(self):
-        """
-        Checks if the agent is standing on a traffic light
-        """
-        # state: False = red, True = green
-        cell_content = self.model.grid.get_cell_list_contents([self.pos])
-        for agent in cell_content:
-            if isinstance(agent, Traffic_Light):
-                if agent.state:
-                    return True
-        return False
-
     def set_turn_conditional(self, next_direction):
         """
         Changes between turning and not turning based on the next direction
+
+        Args:
+            next_direction (string): the direction that will follow the current self direction
         """
         if self.direction != next_direction and self.direction is not None:
             self.turning = True
@@ -232,6 +223,14 @@ class Car(Agent):
             self.turning = False
             
     def moore_roundabout(self):
+        """
+        The diagonal position of the agent depending 
+        on its direction for the roundabout to be more smooth 
+        and follow vehicular traffic rules
+
+        Returns:
+            tuple(int, int): the coordinates of the diagonal position
+        """
         if self.direction == "Down":
             return (self.pos[0] + 1, self.pos[1] - 1)
         elif self.direction == "Up":
@@ -245,7 +244,9 @@ class Car(Agent):
 
 class Traffic_Light(Agent):
     """
-    Obstacle agent. Just to add obstacles to the grid.
+    Traffic light agent where the cars/busses will stop if the light is red
+    state = True means green/go
+    state = False means red/shop
     """
 
     def __init__(self, unique_id, model, state=False, timeToChange=10):
@@ -264,22 +265,26 @@ class Traffic_Light(Agent):
         self.total_cars = 0
 
     def step(self):
-        # if self.model.schedule.steps % self.timeToChange == 0:
-        #     self.state = not self.state
 
+        # Initialize the direction of where the cars are coming from
         if self.direction is None:
             self.direction = self.get_direction_of_cars()
 
+        # Get the traffic light which is next to the current one
         if self.partner is None:
             self.partner = self.get_partner()
 
+        # Get both traffic lights that are opposing
         if self.opposing_traffic_lights == ():
             self.opposing_traffic_lights = self.get_opposing_traffic_lights()
 
+        # Will get the number of cars that are in the next 3 positions
         self.current_cars = self.get_number_of_cars(3)
+        # Get partner's and add it to self to get the total number of cars in that street
         self.total_cars = self.current_cars + self.get_number_cars_from_partner()
-        # if self.current_cars != 0:
-        #    print(f"Agente: {self.unique_id} cars: {self.current_cars}")
+
+        # If the number of cars is greater than the opposing two traffic lights,
+        # turn green and turn red the two opposing traffic lights
         if self.total_cars > self.get_opposing_traffic_lights_cars():
             self.state = True
             self.partner.state = True
@@ -354,6 +359,7 @@ class Traffic_Light(Agent):
         return None
 
     def get_partner_position(self):
+        
         partner_pos = ()
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Traffic_Light):
@@ -371,7 +377,7 @@ class Traffic_Light(Agent):
 
 class Destination(Agent):
     """
-    Obstacle agent. Just to add obstacles to the grid.
+    The final destination of every car, where the car will arrive
     """
 
     def __init__(self, unique_id, model):
@@ -395,7 +401,7 @@ class Obstacle(Agent):
 
 class Road(Agent):
     """
-    Obstacle agent. Just to add obstacles to the grid.
+    Road agent. For the cars and busses to move on
     """
 
     def __init__(self, unique_id, model, direction="Left"):
@@ -408,7 +414,7 @@ class Road(Agent):
 
 class Sidewalk(Agent):
     """
-    Sidewalk agent for the people to be in
+    Sidewalk agent for the people walk in
     """
 
     def __init__(self, unique_id, model, direction="Left"):
@@ -433,7 +439,7 @@ class Brush(Agent):
 
 class Busdestination(Agent):
     """
-    Destination agent for busses destination
+    Destination agent for all bus stops
     """
 
     def __init__(self, unique_id, model):
@@ -445,28 +451,36 @@ class Busdestination(Agent):
 
 class Bus(Car):
     """
-    Destination agent for busses
+    Bus agent that will follow a predetermined route and will go through 
+    every bus destination picking up people and dropping them off
     """
 
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        # The predetermined path that the bus will follow
         self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
                      (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
+        # A list of all the person agents that the bus is carrying
         self.people_inside = []
+        # If the bus is currently waiting in a bus destination
         self.stopping = False
+        # How much time the bus has left to wait in the bus destination
         self.waiting_time = 0
 
     def step(self):
         
+        # If the bus is in the first element of its path, 
+        # pop that element to follow the next road
         if self.pos == self.path[0]:
             self.path.pop(0)
 
+        # If the bus has made a full loop of its path, 
+        # reset the path it will follow so it can start again
         if len(self.path) == 0:
             self.path = [(22, 24), (13, 24), (13, 17), (1, 17),
                          (1, 8), (14, 8), (14, 1), (22, 1), (22, 24)]
             
-        
-            
+        # If the bus is in a bus destination and waiting, wait 3 steps then move.
         if self.stopping:
             self.waiting_time += 1
             if self.waiting_time == 2:
@@ -474,6 +488,8 @@ class Bus(Car):
                 self.waiting_time = 0
             return
 
+        # Follow the path of the bus until it reaches the next element in the list 
+        # setting if the bus is turning and its current direction
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             self.set_turn_conditional("Down")
             self.direction = "Down"
@@ -499,6 +515,8 @@ class Bus(Car):
             if self.is_position_valid_for_parking(next_step):
                 self.model.grid.move_agent(self, next_step)
                 
+        # If the bus is in a bus destination, 
+        # and there is someone waiting for the bus, picks them up
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Person):
                 if agent.waiting_for_bus:
@@ -508,9 +526,11 @@ class Bus(Car):
                     agent.bus = self
                     agent.original_destination = agent.pos
         
+        # Everytime the bus moves, move the people inside the bus with it
         for agent in self.people_inside:
             agent.model.grid.move_agent(agent, self.pos)
             
+        # If the bus is in a bus destination, stop for 3 steps in the bus destination
         for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
             if isinstance(agent, Busdestination) and self.stopping == False:
                 self.stopping = True
@@ -518,28 +538,39 @@ class Bus(Car):
 
 class Person(Agent):
     """
-    Person agent
+    Person agent that will move around the sidewalk, and will be able to get into a bus
     """
 
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        # A random direction that will determine where the agent will move, 
+        # clockwise or counter clockwise
         self.initial_direction = random.choice(["Left", "Right"])
+        # The direction where the agent will move
         self.direction = self.initial_direction
+        # If the person is in a bus or not
         self.in_bus = False
+        # If the person is staying in the BusDestination
         self.waiting_for_bus = False
+        # The bus agent of where the person is current in
         self.bus = None
+        # The original bus destination where the person will be picked off
         self.original_destination = None
 
     def step(self):
 
+        # If the person passes through the BusDestination, it will have a 10% chance of waiting for a bus
         if not self.in_bus and "Busdestination" in self.get_cell_class_names(self.pos):
             decision_bus_stop = random.choice([0 for _ in range(9)] + [1])
             if decision_bus_stop == 1:
                 self.waiting_for_bus = True
 
+        # Stay in the bus destination until the bus picks them up
         if self.waiting_for_bus:
             return
 
+        # If the person is in a bus, it will have a 33% chance of getting 
+        # off the bus when the bus is in a bus destination
         if self.in_bus:
             for agent in self.model.grid.iter_neighbors(self.pos, moore=False):
                 if isinstance(agent, Busdestination) and agent.pos != self.original_destination:
@@ -555,6 +586,8 @@ class Person(Agent):
                         return
             return
 
+        # The person will wander either clockwise or counter 
+        # clockwise until it is waiting for a bus
         next_position = self.next_step_based_on_direction(self.direction)
         if self.is_valid_position(next_position):
             self.model.grid.move_agent(self, next_position)
@@ -571,7 +604,14 @@ class Person(Agent):
 
     def is_valid_position(self, position):
         """
-        Checks if the position is valid by not being out of bounds, is a road or is a traffic light on green
+        Checks if the position is valid by not being out of bounds, 
+        is a road or is a traffic light on green
+
+        Args:
+            position (tuple(int, int)): The position in the grid to check
+
+        Returns:
+            bool: True if the position is valid, False otherwise
         """
         if not self.model.grid.out_of_bounds(position):
             cell_content = self.get_cell_class_names(position)
@@ -584,14 +624,26 @@ class Person(Agent):
 
     def get_cell_class_names(self, position):
         """
-        Gets the class name of the cell
+        Get all the class names of the agents in the cell
+
+        Args:
+            position (tuple(int, int)): The position in the grid to check
+
+        Returns:
+            list: A list of the class name of every agent in the cell
         """
         cell_content = self.model.grid.get_cell_list_contents([position])
         return [type(agent).__name__ for agent in cell_content]
 
     def next_step_based_on_direction(self, direction):
         """
-        Gets the next step based on the direction
+        Get the next position based on the direction
+
+        Args:
+            direction (string): The direction to move into (Up, Down, Left, Right)
+
+        Returns:
+            tuple(int, int): The coordinates of the cell to move into
         """
         if direction == "Up":
             return (self.pos[0], self.pos[1] + 1)
@@ -606,7 +658,14 @@ class Person(Agent):
 
     def next_direction(self, direction, initial_direction):
         """
-        Gets the next direction of the person
+        Know where to move next depending on the direction and the initial direction
+
+        Args:
+            direction (string): The current direction of the agent
+            initial_direction (string): The direction assigned at the initialization of the agent
+
+        Returns:
+            string: The next direction to move into and be assigned to the agent
         """
         if direction == "Up":
             if initial_direction == "Left":
