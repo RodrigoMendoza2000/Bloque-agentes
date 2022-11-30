@@ -89,7 +89,17 @@ class Car(Agent):
             self.parking = True
             self.from_destination = None
             return
+        
+        
+        self.roundabout_coordinates = [(12,9), (12,8), (13,13), (14,13), (18,12), (18,11), (16,7),(17,7)]
 
+        if self.pos in self.roundabout_coordinates:
+            moore_roundabout = self.moore_roundabout()
+            if self.is_position_valid_for_parking(moore_roundabout):
+                pass
+            else:
+                return
+            
         if self.pos[0] == self.path[0][0] and self.pos[1] - self.path[0][1] > 0:
             # self.set_turn_conditional("Down")
             self.direction = "Down"
@@ -125,8 +135,7 @@ class Car(Agent):
             elif self.pos[0] - self.path[1][0] < 0 and self.pos[1] == self.path[1][1]:
                 self.set_turn_conditional("Right")
 
-        print(
-            f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
+        #print(f"Agente: {self.unique_id} is turning {self.turning}, path {self.path}")
 
     def step(self):
         """ 
@@ -221,6 +230,17 @@ class Car(Agent):
             self.turning = True
         else:
             self.turning = False
+            
+    def moore_roundabout(self):
+        if self.direction == "Down":
+            return (self.pos[0] + 1, self.pos[1] - 1)
+        elif self.direction == "Up":
+            return (self.pos[0] - 1, self.pos[1] + 1)
+        elif self.direction == "Left":
+            return (self.pos[0] - 1, self.pos[1] - 1)
+        elif self.direction == "Right":
+            return (self.pos[0] + 1, self.pos[1] + 1)
+        return (self.pos[0], self.pos[1])
 
 
 class Traffic_Light(Agent):
