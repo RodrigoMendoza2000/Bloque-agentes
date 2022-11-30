@@ -20,9 +20,13 @@ class RandomModel(Model):
 
         # Variable to see all the available destination positions
         self.destination_positions = []
+        # Where the agents will spawn
         self.destination_entrance = []
+        # All the sidewalk positions where the person agent can walk and spawn
         self.sidewalk_positions = []
 
+        # Iterate through the base.txt file to get the positions of the sidewalks, 
+        # traffic lights, bushes, destination and bus destinations
         with open('base.txt') as baseFile:
             lines = baseFile.readlines()
             self.width = len(lines[0])-1
@@ -31,6 +35,7 @@ class RandomModel(Model):
             self.grid = MultiGrid(self.width, self.height, torus=False)
             self.schedule = RandomActivation(self)
 
+            
             for r, row in enumerate(lines):
                 for c, col in enumerate(row):
                     if col in ["v", "^", ">", "<"]:
@@ -63,49 +68,31 @@ class RandomModel(Model):
                         self.grid.place_agent(agent, (c, self.height - r - 1))
 
         self.num_agents = N
+        # Add N number of agents to the model
         for i in range(self.num_agents):
             agent = Car(f"c{i}", self)
             self.schedule.add(agent)
 
+        # Add 25 persons to the simulation on a random position
         for i in range(25):
             agent = Person(f"p{i}", self)
             random_sidewalk = random.choice(self.sidewalk_positions)
             self.grid.place_agent(agent, random_sidewalk)
             self.schedule.add(agent)
 
+        # Add one bus to the simulation
         agent = Bus(f"b1", self)
         self.schedule.add(agent)
         self.grid.place_agent(agent, (22, 24))
 
-        # eliminate two destinations from final destinations and add them to entrance destinations
+        # Add the 4 corners of the map where the cars will come from
         self.destination_entrance.append((0, 0))
-        # self.destination_entrance.append((0,1))
         self.destination_entrance.append((0, 24))
-        # self.destination_entrance.append((1,24))
         self.destination_entrance.append((23, 24))
-        # self.destination_entrance.append((23,23))
         self.destination_entrance.append((23, 0))
-        # self.destination_entrance.append((22,0))
-        """self.destination_entrance.append((3,22))
-        self.destination_entrance.append((19,2))
-        self.destination_positions.remove((3,22))
-        self.destination_positions.remove((19,2))"""
-        """self.destination_entrance.append((12,15))
-        self.destination_entrance.append((12,4))
-        self.destination_positions.remove((12,15))
-        self.destination_positions.remove((12,4))"""
-        """for i in range(2):
-            random_destination = random.choice(self.destination_positions)
-            self.destination_entrance.append(random_destination)
-            self.destination_positions.remove(random_destination)"""
 
         self.running = True
 
     def step(self):
         '''Advance the model by one step.'''
         self.schedule.step()
-        """if self.schedule.steps % 10 == 0:
-            for agents, x, y in self.grid.coord_iter():
-                for agent in agents:
-                    if isinstance(agent, Traffic_Light):
-                        agent.state = not agent.state"""

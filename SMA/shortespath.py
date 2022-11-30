@@ -2,6 +2,7 @@
 # License: MIT
 import math
 
+# The graph dictionary represing all nodes and its connections in the base.txt map
 simCity = {
     'AA': {'AT': 6},
     'AB': {'AA': 1, 'AF': 1},
@@ -85,6 +86,7 @@ simCity = {
     'DB': {'CG': 8},
 }
 
+# Dictionary representing the coordinates in the grid according to the node name in SimCity
 nodo_coordenada = {
     'AA': (0,24),
     'AB': (1,24),
@@ -167,6 +169,7 @@ nodo_coordenada = {
     'DA': (22,0),
     'DB': (23,0),
 }
+
 class Dijkstra:
     def __init__(self, graph, start_vertex):
         self.graph = graph
@@ -277,6 +280,3 @@ if __name__ == '__main__':
     dijkstraCity = DijkstraCoordinate(graph=simCity, start_coordinate=(3,22))
     dijkstraCity.dijkstra()
     print(dijkstraCity.shortest_path_coordinates((18,14)))
-
-    # for vertex in dijkstraCity.vertices:
-    #   print('C ->', vertex + ':', dijkstraCity.build_path(vertex))
