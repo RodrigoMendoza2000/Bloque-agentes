@@ -42,42 +42,25 @@ public class CamerasController : MonoBehaviour
             sideTopCam.tag = "MainCamera";
 
             topCam.enabled = false;
-            topCam.tag = "Untagged";
-
             busCam.enabled = false;
-            busCam.tag = "Untagged";
-
             trafficLightCam.enabled = false;
-            trafficLightCam.tag = "Untagged";
-
             roundaboutCam.enabled = false;
-            roundaboutCam.tag = "Untagged";
-
             parkingLotCam.enabled = false;
-            parkingLotCam.tag = "Untagged";
         }
-        else if (Input.GetKeyDown("2"))
+        else if (Input.GetKeyDown("3"))
         {
             // BUS CAMERA
             busCam.enabled = true;
             busCam.tag = "MainCamera";
 
             sideTopCam.enabled = false;
-            sideTopCam.tag = "Untagged";
-
             topCam.enabled = false;
-            topCam.tag = "Untagged";
-
             trafficLightCam.enabled = false;
-            trafficLightCam.tag = "Untagged";
-
             roundaboutCam.enabled = false;
-            roundaboutCam.tag = "Untagged";
-
             parkingLotCam.enabled = false;
-            parkingLotCam.tag = "Untagged";
+
         }
-        else if (Input.GetKeyDown("3"))
+        else if (Input.GetKeyDown("2"))
         {
             // ROUNDABOUT CAMERA
             roundaboutCam.enabled = true;

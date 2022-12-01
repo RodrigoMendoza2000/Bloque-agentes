@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Assets/FINALLLLLL/scripts/MakeCity.cs" />
     <Compile Include="Assets/FINALLLLLL/scripts/AgentController.cs" />
+    <Compile Include="Assets/FINALLLLLL/scripts/CamerasController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/FINALLLLLL/Data/2022_base.txt" />
