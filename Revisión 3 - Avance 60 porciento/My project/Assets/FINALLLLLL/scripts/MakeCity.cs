@@ -6,8 +6,6 @@ public class MakeCity : MonoBehaviour
 {
     [SerializeField] TextAsset layout;
     [SerializeField] GameObject roadPrefab;
-    [SerializeField] GameObject buildingPrefab;
-    [SerializeField] GameObject semaphorePrefab;
     [SerializeField] GameObject sidewalkPrefab;
     [SerializeField] int tileSize;
 
@@ -15,12 +13,6 @@ public class MakeCity : MonoBehaviour
     void Start()
     {
         MakeTiles(layout.text);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     void MakeTiles(string tiles)
@@ -51,42 +43,6 @@ public class MakeCity : MonoBehaviour
                 tile.transform.parent = transform;
                 x += 1;
             }
-            else if (tiles[i] == 's')
-            {
-                position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.identity);
-                tile.transform.parent = transform;
-                tile = Instantiate(semaphorePrefab, position, Quaternion.identity);
-                tile.transform.parent = transform;
-                x += 1;
-            }
-            else if (tiles[i] == 'S')
-            {
-                position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(roadPrefab, position, Quaternion.Euler(0, 90, 0));
-                tile.transform.parent = transform;
-                tile = Instantiate(semaphorePrefab, position, Quaternion.Euler(0, 90, 0));
-                tile.transform.parent = transform;
-                x += 1;
-            }
-            else if (tiles[i] == 'D')
-            {
-                position = new Vector3(x * tileSize, 0, y * tileSize);
-                tile = Instantiate(buildingPrefab, position, Quaternion.Euler(0, 90, 0));
-                tile.GetComponent<Renderer>().materials[0].color = Color.red;
-                tile.transform.parent = transform;
-                x += 1;
-            }
-            else if (tiles[i] == '#')
-            {
-                //float yscale = Random.Range(0.5f, 2.0f);
-                //position = new Vector3(x * tileSize, 0, y * tileSize);
-                //tile = Instantiate(buildingPrefab, position, Quaternion.identity);
-                //tile.transform.localScale = new Vector3(1, yscale, 1);
-                //tile.transform.parent = transform;
-                //tile.transform.position += new Vector3(0, yscale / 2, 0);
-                x += 1;
-            }
             else if (tiles[i] == '=')
             {
                 position = new Vector3(x * tileSize, 0.025f, y * tileSize);
@@ -98,6 +54,10 @@ public class MakeCity : MonoBehaviour
             {
                 x = 0;
                 y -= 1;
+            }
+            else
+            {
+                x += 1;
             }
         }
     }

@@ -147,6 +147,7 @@ public class BusData
 
 public class AgentController : MonoBehaviour
 {
+    System.Random random = new System.Random();
     // Ruta de la nube
     // private string url = "https://agents.us-south.cf.appdomain.cloud/";
     string serverUrl = "http://localhost:8585";
@@ -162,17 +163,18 @@ public class AgentController : MonoBehaviour
     Dictionary<string, Vector3> prevPositions, currPositions;
     HashSet<string> idAgents = new HashSet<string>();
 
-    bool update_a = false, started_a = false;
+    bool update_a = false;
 
     // Una celda es una unidad de Unity
-    public GameObject carPrefab, busPrefab, personPrefab;
+    // Car prefabs
+    public GameObject carPrefabA, carPrefabB, carPrefabC, carPrefabD;
+    public GameObject busPrefab, personPrefab;
     public int N, max_steps;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
     void Start()
     {
-
         // Creación de objetos base
         agentsData = new AgentsData();
 
@@ -354,10 +356,7 @@ public class AgentController : MonoBehaviour
             }
 
 
-            if (agentsObject.Count == N)
-            {
-                started_a = true;
-            }
+
             update_a = true;
         }
     }
@@ -371,7 +370,25 @@ public class AgentController : MonoBehaviour
             //guarda referencia al agente nuevo en la posicion inicial 
             if (id[0] == 'c')
             {
-                agentsObject[id] = Instantiate(carPrefab, newPos, Quaternion.identity);
+                int n = random.Next(4);
+                GameObject prefab;
+                switch (n)
+                {
+                    case 0:
+                        prefab = carPrefabA;
+                        break;
+                    case 1:
+                        prefab = carPrefabB;
+                        break;
+                    case 2:
+                        prefab = carPrefabC;
+                        break;
+                    default:
+                        prefab = carPrefabD;
+                        break;
+                }
+
+                agentsObject[id] = Instantiate(prefab, newPos, Quaternion.identity);
                 agentsObject[id].SetActive(false);
             }
             else if (id[0] == 'b')
