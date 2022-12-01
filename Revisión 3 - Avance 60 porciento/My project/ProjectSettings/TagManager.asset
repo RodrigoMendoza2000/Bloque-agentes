@@ -3,7 +3,17 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Semaforo6
+  - Semaforo4
+  - Semaforo3
+  - Semaforo7
+  - Semaforo5
+  - Semaforo9
+  - Semaforo8
+  - Semaforo11
+  - Semaforo12
+  - Semaforo10
   layers:
   - Default
   - TransparentFX
