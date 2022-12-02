@@ -34,6 +34,8 @@ def getAgents():
         carsData = []
         busData = {}
         peopleData = []
+        trafficLightsData = []
+
         for i in list(randomModel.grid.coord_iter()):
             agents = i[0]
             x = i[1]
@@ -67,8 +69,17 @@ def getAgents():
                          "y": 0.1,
                          "z": z,
                          "inBus": a.in_bus})
-
-        return jsonify({"cars": carsData, "bus": busData, "people": peopleData})
+                
+                if type(a) == Traffic_Light:
+                    trafficLightsData.append({
+                        "id": a.unique_id,
+                        "state": a.state
+                    })
+ 
+        return jsonify({"cars": carsData,
+                        "bus": busData,
+                        "people": peopleData,
+                        "trafficLights": trafficLightsData})
 
 
 # Se encarga de hacerle el update al modelo, puede ser muy tardado

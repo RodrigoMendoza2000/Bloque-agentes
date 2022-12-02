@@ -40,6 +40,18 @@ public class PersonData
     }
 }
 
+[Serializable]
+public class TrafficLightsData
+{
+    public string id;
+    public bool state;
+
+    public TrafficLightsData(string id, bool state)
+    {
+        this.id = id;
+        this.state = state;
+    }
+}
 
 [Serializable]
 public class AgentsData
@@ -85,12 +97,14 @@ public class AgentsData
     public List<WebCarData> cars;
     public BusData bus;
     public List<WebPersonData> people;
+    public List<TrafficLightsData> trafficLights;
 
     public AgentsData()
     {
         this.cars = new List<WebCarData>();
         this.bus = new BusData();
         this.people = new List<WebPersonData>();
+        this.trafficLights = new List<TrafficLightsData>();
     }
 
     public void UpdateCarsDict(Dictionary<string, CarData> dict)
@@ -157,7 +171,7 @@ public class AgentController : MonoBehaviour
     string updateEndpoint = "/update";
 
     AgentsData agentsData;
-    Dictionary<string, CarData>  carsDict = new Dictionary<string, CarData>();
+    Dictionary<string, CarData> carsDict = new Dictionary<string, CarData>();
     Dictionary<string, PersonData> peopleDict = new Dictionary<string, PersonData>();
     Dictionary<string, GameObject> agentsObject;
     Dictionary<string, Vector3> prevPositions, currPositions;
@@ -186,13 +200,26 @@ public class AgentController : MonoBehaviour
             carsDict['c' + i.ToString()] = new CarData();
         }
 
-        for (int i = 0; i < 25; i ++)
+        for (int i = 0; i < 25; i++)
         {
             peopleDict['p' + i.ToString()] = new PersonData();
         }
 
 
         agentsObject = new Dictionary<string, GameObject>();
+
+        agentsObject["tl581"] = GameObject.Find("tl581");
+        agentsObject["tl534"] = GameObject.Find("tl534");
+        agentsObject["tl541"] = GameObject.Find("tl541");
+        agentsObject["tl588"] = GameObject.Find("tl588");
+        agentsObject["tl430"] = GameObject.Find("tl430");
+        agentsObject["tl405"] = GameObject.Find("tl405");
+        agentsObject["tl198"] = GameObject.Find("tl198");
+        agentsObject["tl152"] = GameObject.Find("tl152");
+        agentsObject["tl290"] = GameObject.Find("tl290");
+        agentsObject["tl265"] = GameObject.Find("tl265");
+        agentsObject["tl64"] = GameObject.Find("tl64");
+        agentsObject["tl18"] = GameObject.Find("tl18");
 
         timer = timeToUpdate;
 
@@ -203,11 +230,11 @@ public class AgentController : MonoBehaviour
     private void Update()
     {   // Sirve para hacer solicitud de nuevas posiciones
         if (timer < 0)
-            {
-                timer = timeToUpdate;
-                update_a = false;
-                StartCoroutine(UpdateSimulation());
-            }
+        {
+            timer = timeToUpdate;
+            update_a = false;
+            StartCoroutine(UpdateSimulation());
+        }
         // Si ya actualicé posiciones de mis agentes
         if (update_a)
         {
@@ -232,7 +259,7 @@ public class AgentController : MonoBehaviour
                     if (carsDict[agent.Key].turning)
                     {
                         //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
-                    } 
+                    }
                     else
                     {
                         //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(0, 0, 255);
@@ -268,6 +295,28 @@ public class AgentController : MonoBehaviour
                 if (agent.Key[0] == 'c' || agent.Key[0] == 'b' || agent.Key[0] == 'p')
                 {
                     if (direction != Vector3.zero) agentsObject[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                }
+
+                foreach (var trafficLightD in agentsData.trafficLights)
+                {
+                    GameObject trafficL;
+                    if (agentsObject.TryGetValue(trafficLightD.id, out trafficL))
+                    {
+ 
+                        GameObject green = trafficL.transform.Find("Green").gameObject;
+                        GameObject red = trafficL.transform.Find("Red").gameObject;
+                        if (trafficLightD.state)
+                        {
+                            green.SetActive(true);
+                            red.SetActive(false);
+                        }
+                        else
+                        {
+                            green.SetActive(false);
+                            red.SetActive(true);
+                        }
+                      
+                    }
                 }
 
             }
@@ -347,7 +396,7 @@ public class AgentController : MonoBehaviour
             // Update bus position
             Vector3 newBusPosition = new Vector3(agentsData.bus.x, agentsData.bus.y, agentsData.bus.z);
             UpdatePosition("b1", newBusPosition);
-            
+
             // u
             foreach (var person in peopleDict)
             {
@@ -417,5 +466,3 @@ public class AgentController : MonoBehaviour
     }
 
 }
-
-
