@@ -27,7 +27,7 @@ public class CarData
 public class PersonData
 {
     public float x, y, z;
-    public Vector3 offset = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), 0, UnityEngine.Random.Range(-0.35f, 0.35f));
+    public Vector3 offset = new Vector3(UnityEngine.Random.Range(-0.4f, 0.4f), 0.12f, UnityEngine.Random.Range(-0.35f, 0.35f));
     public bool inBus;
     public int showInBus = 1;
 
@@ -162,34 +162,39 @@ public class BusData
 public class AgentController : MonoBehaviour
 {
     System.Random random = new System.Random();
-    // Ruta de la nube
-    // private string url = "https://agents.us-south.cf.appdomain.cloud/";
+
+    // URL
     string serverUrl = "http://localhost:8585";
-    // Endpoints (que coincidan nombres)
+
+    // Endpoints
     string getAgentsEndpoint = "/getAgents";
     string sendConfigEndpoint = "/init";
     string updateEndpoint = "/update";
 
+    // Agents data
     AgentsData agentsData;
     Dictionary<string, CarData> carsDict = new Dictionary<string, CarData>();
     Dictionary<string, PersonData> peopleDict = new Dictionary<string, PersonData>();
+    // Agents objects
     Dictionary<string, GameObject> agentsObject;
+    // Agents positions
     Dictionary<string, Vector3> prevPositions, currPositions;
+    // Active agents
     HashSet<string> idAgents = new HashSet<string>();
 
     bool update_a = false;
 
-    // Una celda es una unidad de Unity
-    // Car prefabs
+    // Dynamic prefabs
     public GameObject carPrefabA, carPrefabB, carPrefabC, carPrefabD;
     public GameObject busPrefab, personPrefab;
+    // Simulation varialbes
     public int N, max_steps;
     public float timeToUpdate = 5.0f;
     private float timer, dt;
 
     void Start()
     {
-        // Creación de objetos base
+        // Creaci?n de objetos base
         agentsData = new AgentsData();
 
         prevPositions = new Dictionary<string, Vector3>();
@@ -223,30 +228,43 @@ public class AgentController : MonoBehaviour
 
         timer = timeToUpdate;
 
-        // Permite iniciar una función que corre de manera concurrente (mismo tiempo que la principal)
+        
         StartCoroutine(SendConfiguration());
     }
 
     private void Update()
-    {   // Sirve para hacer solicitud de nuevas posiciones
+    {   // Ask for new positions
         if (timer < 0)
         {
             timer = timeToUpdate;
             update_a = false;
             StartCoroutine(UpdateSimulation());
         }
-        // Si ya actualicé posiciones de mis agentes
+        // If positions are updated
         if (update_a)
         {
             timer -= Time.deltaTime;
             dt = 1.0f - (timer / timeToUpdate);
 
-            float ndt = dt * dt * (3 - 2 * dt);
-
+            // Update agents
             foreach (var agent in currPositions)
             {
+                // Updat position (linear interpolation)
+                Vector3 currentPosition = agent.Value;
+                Vector3 previousPosition = prevPositions[agent.Key];
+                Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
+                Vector3 direction = currentPosition - interpolated;
+
+                // Update direction
+                if (agent.Key[0] == 'c' || agent.Key[0] == 'b' || agent.Key[0] == 'p')
+                {
+                    if (direction != Vector3.zero) agentsObject[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
+                }
+
+                // Car
                 if (agent.Key[0] == 'c')
                 {
+                    // Show object if needed
                     if (carsDict[agent.Key].destination != null && carsDict[agent.Key].destination.Count > 0)
                     {
                         agentsObject[agent.Key].SetActive(true);
@@ -255,28 +273,14 @@ public class AgentController : MonoBehaviour
                     {
                         agentsObject[agent.Key].SetActive(false);
                     }
-
-                    if (carsDict[agent.Key].turning)
-                    {
-                        //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
-                    }
-                    else
-                    {
-                        //agentsObject[agent.Key].GetComponent<Renderer>().material.color = new Color(0, 0, 255);
-                    }
                 }
 
-                Vector3 currentPosition = agent.Value;
-                Vector3 previousPosition = prevPositions[agent.Key];
-                // Interpolación lineal para que se mueva poco a poco hasta la dirección final
-
-                Vector3 interpolated = Vector3.Lerp(previousPosition, currentPosition, dt);
-                // Resta de vectores
-                Vector3 direction = currentPosition - interpolated;
-
+                // Person
                 if (agent.Key[0] == 'p')
                 {
+                    // Move and offset person position
                     agentsObject[agent.Key].transform.localPosition = interpolated + peopleDict[agent.Key].offset;
+                    // Show object if needed
                     if (peopleDict[agent.Key].inBus)
                     {
                         agentsObject[agent.Key].SetActive(false);
@@ -289,14 +293,11 @@ public class AgentController : MonoBehaviour
                 }
                 else
                 {
+                    // Move object
                     agentsObject[agent.Key].transform.localPosition = interpolated;
                 }
 
-                if (agent.Key[0] == 'c' || agent.Key[0] == 'b' || agent.Key[0] == 'p')
-                {
-                    if (direction != Vector3.zero) agentsObject[agent.Key].transform.rotation = Quaternion.LookRotation(direction);
-                }
-
+                // Traffic Lights
                 foreach (var trafficLightD in agentsData.trafficLights)
                 {
                     GameObject trafficL;
@@ -335,45 +336,36 @@ public class AgentController : MonoBehaviour
         else
         {
             StartCoroutine(GetAgentsData());
-            //StartCoroutine(GetObstacleData());
-
         }
     }
 
-    // Configuración inicial se pone en el editor de unity y se manda a flask
     IEnumerator SendConfiguration()
     {
-        // Se manda la info a través de una forma
         WWWForm form = new WWWForm();
 
-        // deben llamarse igual. Salen del editor de Unity. En mesa deben llamarse como el String
         form.AddField("N", N.ToString());
 
-        // Se manda un post
         UnityWebRequest www = UnityWebRequest.Post(serverUrl + sendConfigEndpoint, form);
         www.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        //Aquí manda el web request
         yield return www.SendWebRequest();
-        //Aquí ya terminó la corutina
+
         if (www.result != UnityWebRequest.Result.Success)
         {
             Debug.Log(www.error);
         }
         else
         {
-            // se mandan 2 co-rutinas
+
             Debug.Log("Configuration upload complete!");
             Debug.Log("Getting Agents positions");
             StartCoroutine(GetAgentsData());
-            //StartCoroutine(GetObstacleData());
-
         }
     }
 
 
     IEnumerator GetAgentsData()
-    {   //obtener nuevas posiciones de los agentes
+    {
         UnityWebRequest www = UnityWebRequest.Get(serverUrl + getAgentsEndpoint);
         yield return www.SendWebRequest();
 
@@ -397,13 +389,12 @@ public class AgentController : MonoBehaviour
             Vector3 newBusPosition = new Vector3(agentsData.bus.x, agentsData.bus.y, agentsData.bus.z);
             UpdatePosition("b1", newBusPosition);
 
-            // u
+            // Update people positions
             foreach (var person in peopleDict)
             {
                 Vector3 newagentPosition = new Vector3(person.Value.x, person.Value.y, person.Value.z);
                 UpdatePosition(person.Key, newagentPosition);
             }
-
 
 
             update_a = true;
@@ -412,11 +403,10 @@ public class AgentController : MonoBehaviour
 
     void UpdatePosition(string id, Vector3 newPos)
     {
+        // New agent
         if (!idAgents.Contains(id))
         {
-            // si es la primera vez que se ejecuta
             prevPositions[id] = newPos;
-            //guarda referencia al agente nuevo en la posicion inicial 
             if (id[0] == 'c')
             {
                 int n = random.Next(4);
@@ -451,11 +441,11 @@ public class AgentController : MonoBehaviour
                 agentsObject[id].SetActive(true);
             }
 
-
             idAgents.Add(id);
         }
+        // Existing agent
         else
-        {   // no es la 1ª vez
+        {   // no es la 1? vez
             Vector3 currentPosition = new Vector3();
             if (currPositions.TryGetValue(id, out currentPosition))
             {
