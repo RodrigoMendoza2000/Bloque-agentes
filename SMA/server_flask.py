@@ -57,14 +57,14 @@ def getAgents():
                     busData = {
                         "id": str(a.unique_id),
                         "x": x,
-                        "y": 0,
+                        "y": 0.1,
                         "z": z}
 
                 if type(a) == Person:
                     peopleData.append(
                         {"id": str(a.unique_id),
                          "x": x,
-                         "y": 0,
+                         "y": 0.1,
                          "z": z,
                          "inBus": a.in_bus})
 
