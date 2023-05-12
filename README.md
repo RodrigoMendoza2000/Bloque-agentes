@@ -11,11 +11,11 @@ Abrir una terminal y correr los siguientes comandos:
 
 Abrir Unity Hub  
 
-Seleccionar **My project**
+Seleccionar **My project** y darle play
 
 ![SS de nuestra simulación en Unity](./imgs/ss.png) 
-![SS de nuestra simulación en Unity](https://drive.google.com/file/d/1SSwXPCNS1lwzgGw4yE5cnjm4Fvi6dVqo/view)
-![SS de nuestra simulación en Unity](https://drive.google.com/file/d/17osevKV6vkHmN_H6ySvnGcF0AdARB_gT/view)
+![SS de nuestra simulación en Unity](./imgs/ss-2.png)
+![SS de nuestra simulación en Unity](./imgs/Captura de pantalla 2023-05-12 a la(s) 10.28.47 a.m..png)
 
 ## Autores
 
