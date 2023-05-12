@@ -15,7 +15,7 @@ Seleccionar **My project** y darle play
 
 ![SS de nuestra simulación en Unity](./imgs/ss.png) 
 ![SS de nuestra simulación en Unity](./imgs/ss-2.png)
-![SS de nuestra simulación en Unity](./imgs/Captura de pantalla 2023-05-12 a la(s) 10.28.47 a.m..png)
+![SS de nuestra simulación en Unity](./imgs/ss-3.png)
 
 ## Autores
 
