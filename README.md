@@ -9,10 +9,11 @@ Abrir una terminal y correr los siguientes comandos:
 
 ```python3 server_flask.py```  
 
-Abrir Unity Hub
+Abrir Unity Hub  
+
 Seleccionar **My project**
 
-![SS de nuestra simulación en Unity](https://drive.google.com/file/d/1jfakHCeJMsSyTo2VDzki2DpkcW8tGFtv/view) 
+![SS de nuestra simulación en Unity](./imgs/ss.png) 
 ![SS de nuestra simulación en Unity](https://drive.google.com/file/d/1SSwXPCNS1lwzgGw4yE5cnjm4Fvi6dVqo/view)
 ![SS de nuestra simulación en Unity](https://drive.google.com/file/d/17osevKV6vkHmN_H6ySvnGcF0AdARB_gT/view)
 
